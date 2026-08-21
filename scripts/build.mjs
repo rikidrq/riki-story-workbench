@@ -5,7 +5,14 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-const sourcePath = path.join(root, 'src', 'riki-workbench.js');
+const sourceFiles = [
+  'riki-workbench.js',
+  'riki-project-core.js',
+  'riki-model-config.js',
+  'riki-planning.js',
+  'riki-ui.js',
+];
+const sourcePath = path.join(root, 'src', sourceFiles[0]);
 const dist = path.join(root, 'dist');
 const releaseDirectory = path.join(dist, 'releases', pkg.version);
 const bundlePath = path.join(releaseDirectory, 'riki-workbench.js');
@@ -44,12 +51,24 @@ fs.rmSync(releaseDirectory, { recursive: true, force: true });
 fs.mkdirSync(releaseDirectory, { recursive: true });
 fs.mkdirSync(importableDirectory, { recursive: true });
 
+for (const file of sourceFiles) {
+  if (!fs.existsSync(path.join(root, 'src', file))) throw new Error(`缺少 1.1 运行模块：src/${file}`);
+}
 const source = fs.readFileSync(sourcePath, 'utf8');
 if ((source.match(/__RIKI_VERSION__/g) || []).length !== 1) {
   throw new Error('源码必须且只能包含一个 __RIKI_VERSION__ 构建标记');
 }
-const bundle = `/* Riki Story Workbench ${pkg.version} | generated; edit src/riki-workbench.js */\n${source.replace('__RIKI_VERSION__', pkg.version).trimEnd()}\n`;
-fs.writeFileSync(bundlePath, bundle, 'utf8');
+const releaseModules = sourceFiles.map(file => {
+  const raw = fs.readFileSync(path.join(root, 'src', file), 'utf8');
+  const content = file === 'riki-workbench.js'
+    ? raw.replace('__RIKI_VERSION__', pkg.version)
+    : raw;
+  const generated = `/* Riki Story Workbench ${pkg.version} | generated from src/${file} */\n${content.trimEnd()}\n`;
+  const target = path.join(releaseDirectory, file);
+  fs.writeFileSync(target, generated, 'utf8');
+  return { file, target, content: generated };
+});
+const bundle = releaseModules[0].content;
 
 const remoteBase = 'https://gcore.jsdelivr.net/gh/rikidrq/riki-story-workbench';
 const localBase = 'http://127.0.0.1:8178/releases';
@@ -96,7 +115,7 @@ const report = {
   deliveryMode: 'component',
   stableScriptId,
   artifacts: [
-    { path: path.relative(root, bundlePath).replaceAll('\\', '/'), sha256: sha256(bundle) },
+    ...releaseModules.map(module => ({ path: path.relative(root, module.target).replaceAll('\\', '/'), sha256: sha256(module.content) })),
     { path: path.relative(root, remoteLoaderPath).replaceAll('\\', '/'), sha256: sha256(remoteLoaderContent) },
     { path: path.relative(root, localLoaderPath).replaceAll('\\', '/'), sha256: sha256(localLoaderContent) },
     { path: path.relative(root, importableLoaderPath).replaceAll('\\', '/'), sha256: sha256(importableContent) },

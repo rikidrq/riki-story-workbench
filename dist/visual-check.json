@@ -1,22 +1,85 @@
 {
-  "schemaVersion": 1,
-  "checkedAt": "2026-08-21T09:32:38.776Z",
+  "schemaVersion": 2,
+  "checkedAt": "2026-08-21T13:32:09.450Z",
   "results": [
     {
       "viewport": "desktop-1440x900",
       "title": "Riki 剧情工作台",
       "shell": {
-        "width": 1411,
-        "height": 864
+        "width": 1426,
+        "height": 882
       },
-      "workspaceDisplay": "grid",
-      "bookButtons": 3,
-      "entryButtons": 1,
+      "topViews": [
+        "chat",
+        "artifacts",
+        "worldbook",
+        "settings",
+        "logs"
+      ],
+      "modules": [
+        "main",
+        "outline",
+        "act",
+        "chapter",
+        "character",
+        "progression_preset",
+        "format_guard"
+      ],
+      "branches": 1,
       "mobileNavDisplay": "none",
       "horizontalOverflow": false,
       "errors": [],
-      "diffPreviewOpened": true,
-      "discussionMessages": 2
+      "journey": {
+        "branchCreated": true,
+        "branchCopied": true,
+        "branchRenamed": true,
+        "branchDeleted": true,
+        "preferenceSaved": true,
+        "preferenceConfirmed": true,
+        "module_main": true,
+        "module_outline": true,
+        "module_act": true,
+        "module_chapter": true,
+        "module_character": true,
+        "module_progression_preset": true,
+        "module_format_guard": true,
+        "settingsVisible": true,
+        "apiSaved": true,
+        "systemSaved": true,
+        "bindingSaved": true,
+        "worldbookDiff": true,
+        "worldbookApplied": true,
+        "worldbookUndo": true,
+        "proposalCreated": true,
+        "artifactConfirmed": true,
+        "projectExport": true,
+        "rerollWorked": true,
+        "messageCopy": true,
+        "messageEdited": true,
+        "formatCompiler": true,
+        "artifactView": true,
+        "artifactRevisionProposal": true,
+        "artifactDeletedToTrash": true,
+        "artifactRestored": true,
+        "projectImport": true,
+        "logsVisible": true,
+        "logInputVisible": true,
+        "logExport": true,
+        "secretExcludedFromProject": true
+      },
+      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"tavern-current\",\n  \"apiPresetName\": \"酒馆当前连接\",\n  \"transport\": \"tavern\",\n  \"model\": \"\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"\",\n  \"profile\": null,\n  \"credential\": \"由酒馆当前连接管理\",\n  \"systemPresetId\": \"system-8-844e7f87-160c-4acb-ae8a-be3812b9dc3f\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
+      "rerolledText": "大章 Agent\n完成\n2026-08-21 13:32\n已完成大章候选，请检查后确认。\n重 Roll\n复制\n删除",
+      "rerollCounts": {
+        "before": 2,
+        "after": 2
+      },
+      "logRows": [
+        "大章 Agent\n完成\n2026-08-21 13:32:04 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 13:32:04 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 13:32:03 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 13:32:03 · tavern ·",
+        "总纲 Agent\n完成\n2026-08-21 13:32:02 · tavern ·"
+      ]
     },
     {
       "viewport": "mobile-320x700",
@@ -25,12 +88,37 @@
         "width": 320,
         "height": 700
       },
-      "workspaceDisplay": "block",
-      "bookButtons": 3,
-      "entryButtons": 1,
+      "topViews": [
+        "chat",
+        "artifacts",
+        "worldbook",
+        "settings",
+        "logs"
+      ],
+      "modules": [
+        "main",
+        "outline",
+        "act",
+        "chapter",
+        "character",
+        "progression_preset",
+        "format_guard"
+      ],
+      "branches": 1,
       "mobileNavDisplay": "grid",
       "horizontalOverflow": false,
-      "errors": []
+      "errors": [],
+      "journey": {
+        "mobileNav": true,
+        "leftPane": true,
+        "mainPane": true,
+        "worldbookEditor": true,
+        "rightPane": true,
+        "closedHidden": true,
+        "closedDisplay": "none",
+        "closedOverlayVisible": false,
+        "reopened": true
+      }
     },
     {
       "viewport": "mobile-375x812",
@@ -39,13 +127,37 @@
         "width": 375,
         "height": 812
       },
-      "workspaceDisplay": "block",
-      "bookButtons": 3,
-      "entryButtons": 1,
+      "topViews": [
+        "chat",
+        "artifacts",
+        "worldbook",
+        "settings",
+        "logs"
+      ],
+      "modules": [
+        "main",
+        "outline",
+        "act",
+        "chapter",
+        "character",
+        "progression_preset",
+        "format_guard"
+      ],
+      "branches": 1,
       "mobileNavDisplay": "grid",
       "horizontalOverflow": false,
       "errors": [],
-      "editorVisibleAfterNavigation": true
+      "journey": {
+        "mobileNav": true,
+        "leftPane": true,
+        "mainPane": true,
+        "worldbookEditor": true,
+        "rightPane": true,
+        "closedHidden": true,
+        "closedDisplay": "none",
+        "closedOverlayVisible": false,
+        "reopened": true
+      }
     },
     {
       "viewport": "mobile-430x900",
@@ -54,12 +166,37 @@
         "width": 430,
         "height": 900
       },
-      "workspaceDisplay": "block",
-      "bookButtons": 3,
-      "entryButtons": 1,
+      "topViews": [
+        "chat",
+        "artifacts",
+        "worldbook",
+        "settings",
+        "logs"
+      ],
+      "modules": [
+        "main",
+        "outline",
+        "act",
+        "chapter",
+        "character",
+        "progression_preset",
+        "format_guard"
+      ],
+      "branches": 1,
       "mobileNavDisplay": "grid",
       "horizontalOverflow": false,
-      "errors": []
+      "errors": [],
+      "journey": {
+        "mobileNav": true,
+        "leftPane": true,
+        "mainPane": true,
+        "worldbookEditor": true,
+        "rightPane": true,
+        "closedHidden": true,
+        "closedDisplay": "none",
+        "closedOverlayVisible": false,
+        "reopened": true
+      }
     }
   ]
 }

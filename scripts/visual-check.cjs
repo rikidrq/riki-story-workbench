@@ -30,22 +30,34 @@ async function openPreview(page, viewport) {
       topViews: [...shadow.querySelectorAll('[data-action="view"]')].map(node => node.dataset.view),
       modules: [...shadow.querySelectorAll('[data-action="module-select"]')].map(node => node.dataset.module),
       branches: shadow.querySelectorAll('[data-action="conversation-select"]').length,
-      mobileNavDisplay: getComputedStyle(shadow.querySelector('.mobile-nav')).display,
+      mobileMenuDisplay: getComputedStyle(shadow.querySelector('.mobile-menu-button')).display,
+      mobileSettingsDisplay: getComputedStyle(shadow.querySelector('.mobile-settings-button')).display,
       horizontalOverflow: shell.scrollWidth > shell.clientWidth + 1,
     };
   }, viewport).then(result => ({ ...result, errors, journey: {} }));
 }
 
 async function view(page, id) {
-  await app(page).locator(`[data-action="view"][data-view="${id}"]`).first().click();
-  await app(page).locator(`.${id === 'chat' ? 'chat' : id}-view`).waitFor({ state: 'visible' });
+  const root = app(page);
+  let entry = root.locator(`[data-action="view"][data-view="${id}"]`).first();
+  if (await entry.count() === 0) {
+    const tab = ({ artifacts: 'artifacts', worldbook: 'context', settings: 'config', logs: 'logs' })[id];
+    if (tab) await root.locator(`[data-action="right-tab"][data-tab="${tab}"]`).click();
+    entry = root.locator(`[data-action="view"][data-view="${id}"]`).first();
+  }
+  await entry.click();
+  await root.locator(`.${id === 'chat' ? 'chat' : id}-view`).waitFor({ state: 'visible' });
 }
 
 async function desktopJourney(page, result) {
   const root = app(page);
+  await root.locator('[data-action="workflow-mode"][data-mode="detailed"]').click();
+  result.journey.strategySelected = await root.locator('[data-field="composer"]').isEnabled();
   await root.locator('[data-action="conversation-new"]').click();
   result.journey.branchCreated = await root.locator('[data-action="conversation-select"]').count() >= 2;
-  await root.locator('[data-action="conversation-copy"]').last().click();
+  await root.locator('[data-action="workflow-mode"][data-mode="brief"]').click();
+  await root.locator('[data-action="right-tab"][data-tab="preferences"]').click();
+  await root.locator('[data-action="conversation-copy"]').click();
   result.journey.branchCopied = await root.locator('[data-action="conversation-select"]').count() >= 3;
   await root.locator('[data-action="conversation-rename"]').last().click();
   result.journey.branchRenamed = (await root.locator('[data-action="conversation-select"]').last().innerText()).trim().length > 0;
@@ -59,12 +71,14 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="preference-confirm"]').click();
   result.journey.preferenceConfirmed = (await root.locator('.preference-row').innerText()).includes('已确认');
 
-  for (const moduleId of ['main', 'outline', 'act', 'chapter', 'character', 'progression_preset', 'format_guard']) {
+  await root.locator('[data-action="right-tab"][data-tab="agent"]').click();
+  for (const moduleId of ['main', 'outline', 'act', 'chapter', 'character', 'format_guard']) {
     await root.locator(`[data-action="module-select"][data-module="${moduleId}"]`).click();
     result.journey[`module_${moduleId}`] = (await root.locator(`[data-action="module-select"][data-module="${moduleId}"]`).getAttribute('class')).includes('active');
   }
   await root.locator('[data-action="module-select"][data-module="outline"]').click();
 
+  await root.locator('[data-action="right-tab"][data-tab="config"]').click();
   await view(page, 'settings');
   result.journey.settingsVisible = await root.locator('.settings-card').count() === 3;
   await root.locator('[data-action="api-new"]').click();
@@ -92,6 +106,7 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="api-select"]').selectOption('tavern-current');
   await root.locator('[data-action="api-save"]').click();
 
+  await root.locator('[data-action="right-tab"][data-tab="context"]').click();
   await view(page, 'worldbook');
   await root.locator('[data-action="book-select"]').first().click();
   await root.locator('[data-action="entry-select"]').first().click();
@@ -105,6 +120,7 @@ async function desktopJourney(page, result) {
   result.journey.worldbookUndo = !(await root.locator('[data-field="wb-content"]').inputValue()).includes('视觉测试修改');
 
   await view(page, 'chat');
+  await root.locator('[data-action="right-tab"][data-tab="agent"]').click();
   await root.locator('[data-action="module-select"][data-module="outline"]').click();
   await root.locator('[data-action="generate-formal"]').click();
   await page.waitForFunction(() => {
@@ -116,7 +132,7 @@ async function desktopJourney(page, result) {
   }
   result.journey.proposalCreated = true;
   await root.locator('[data-action="proposal-confirm-all"]').click();
-  await root.locator('[data-action="right-tab"][data-tab="progress"]').click();
+  await root.locator('[data-action="right-tab"][data-tab="artifacts"]').click();
   result.journey.artifactConfirmed = await root.locator('[data-action="open-artifact"][data-kind="outline"]').evaluate(node => node.classList.contains('complete'));
   const projectDownloadPromise = page.waitForEvent('download');
   await root.locator('[data-action="project-export"]').first().click();
@@ -151,6 +167,7 @@ async function desktopJourney(page, result) {
   await root.locator('[data-field="message-edit-draft"]').fill('编辑后：蓝焰线索如何形成因果闭环？');
   await root.locator('[data-action="message-edit-save"]').click();
   result.journey.messageEdited = (await root.locator('.message-user').last().innerText()).includes('编辑后');
+  await root.locator('[data-action="right-tab"][data-tab="agent"]').click();
   await root.locator('[data-action="module-select"][data-module="format_guard"]').click();
   await root.locator('[data-action="generate-formal"]').click();
   await root.locator('.proposal-card').waitFor({ state: 'visible' });
@@ -183,6 +200,7 @@ async function desktopJourney(page, result) {
     result.journey.projectImport = true;
   } else result.journey.projectImport = false;
 
+  await root.locator('[data-action="right-tab"][data-tab="logs"]').click();
   await view(page, 'logs');
   result.logRows = await root.locator('[data-action="log-select"]').allInnerTexts();
   result.journey.logsVisible = await root.locator('[data-action="log-select"]').count() >= 1;
@@ -204,19 +222,23 @@ function rootPath() { return root; }
 
 async function mobileJourney(page, result, screenshot) {
   const root = app(page);
-  result.journey.mobileNav = await root.locator('.mobile-nav').isVisible();
+  result.journey.mobileHeaderControls = await root.locator('.mobile-menu-button').isVisible() && await root.locator('.mobile-settings-button').isVisible();
   await root.locator('[data-action="mobile-pane"][data-pane="left"]').tap();
   result.journey.leftPane = await root.locator('.pane-left').isVisible();
-  await root.locator('[data-action="module-select"][data-module="character"]').tap();
-  await root.locator('[data-action="mobile-pane"][data-pane="main"]').tap();
+  await root.locator('[data-action="mobile-pane"][data-pane="left"]').tap();
   result.journey.mainPane = await root.locator('.main-pane').isVisible();
+  await root.locator('[data-action="mobile-pane"][data-pane="right"]').tap();
+  await root.locator('[data-action="right-tab"][data-tab="agent"]').tap();
+  await root.locator('[data-action="module-select"][data-module="character"]').tap();
+  await root.locator('[data-action="mobile-pane"][data-pane="right"]').tap();
+  await root.locator('[data-action="right-tab"][data-tab="context"]').tap();
   await root.locator('[data-action="view"][data-view="worldbook"]').tap();
   await root.locator('[data-action="book-select"]').first().tap();
   await root.locator('[data-action="entry-select"]').first().tap();
   result.journey.worldbookEditor = await root.locator('[data-field="wb-content"]').isVisible();
   await root.locator('[data-action="mobile-pane"][data-pane="right"]').tap();
   result.journey.rightPane = await root.locator('.pane-right').isVisible();
-  await root.locator('[data-action="mobile-pane"][data-pane="main"]').tap();
+  await root.locator('[data-action="mobile-pane"][data-pane="right"]').tap();
   await root.locator('[data-action="close"]').tap();
   await page.waitForFunction(() => document.querySelector('#riki-story-workbench-root')?.hidden === true);
   Object.assign(result.journey, await root.evaluate(host => ({
@@ -233,7 +255,7 @@ async function mobileJourney(page, result, screenshot) {
 function audit(report) {
   const failures = [];
   for (const item of report.results) {
-    if (item.title !== 'Riki 剧情工作台') failures.push(`${item.viewport}: title missing`);
+    if (item.title !== 'Riki剧情助手') failures.push(`${item.viewport}: title missing`);
     if (item.horizontalOverflow) failures.push(`${item.viewport}: horizontal overflow`);
     failures.push(...item.errors.map(error => `${item.viewport}: ${error}`));
     for (const [name, value] of Object.entries(item.journey)) {
@@ -241,9 +263,9 @@ function audit(report) {
     }
   }
   const desktop = report.results.find(item => item.viewport.startsWith('desktop'));
-  if (desktop.mobileNavDisplay !== 'none') failures.push('desktop: mobile nav visible');
+  if (desktop.mobileMenuDisplay !== 'none' || desktop.mobileSettingsDisplay !== 'none') failures.push('desktop: mobile drawer controls visible');
   for (const mobile of report.results.filter(item => item.viewport.startsWith('mobile'))) {
-    if (mobile.mobileNavDisplay === 'none') failures.push(`${mobile.viewport}: mobile nav hidden`);
+    if (mobile.mobileMenuDisplay === 'none' || mobile.mobileSettingsDisplay === 'none') failures.push(`${mobile.viewport}: mobile drawer controls hidden`);
     if (mobile.journey.closedDisplay !== 'none') failures.push(`${mobile.viewport}: closed display ${mobile.journey.closedDisplay}`);
     if (mobile.journey.closedOverlayVisible) failures.push(`${mobile.viewport}: overlay visible after close`);
   }

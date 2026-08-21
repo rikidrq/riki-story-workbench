@@ -15,15 +15,14 @@ function mockResponse(config) {
   const prompts = Array.isArray(config?.ordered_prompts) ? config.ordered_prompts : [];
   const system = prompts.find(message => message?.role === 'system')?.content || '';
   const joined = prompts.map(message => message?.content || '').join('\n');
-  if (/格式编译 Agent/u.test(system) && /<target_kind>outline/u.test(joined)) return envelope('outline', { title: '编译后的雾港蓝焰', premise: '调查失踪案', mainConflict: '记录与记忆冲突', fullOutline: '从港务记录追到旧灯塔。', foreshadowing: [], endings: [], playerFreedom: '玩家决定路线' });
-  if (/推进预设策划/u.test(system)) return envelope('progression_preset', { title: '推进规则', visibleRules: ['保留玩家选择'], backstageRules: ['线索因果一致'], pacing: '调查与关系交替', continuity: [], spoilerPolicy: '角色知识边界', playerAgency: '不代替玩家决定' });
-  if (/人物策划/u.test(system)) {
+  if (/格式编译 Agent/u.test(joined) && /<target_kind>outline/u.test(joined)) return envelope('outline', { title: '编译后的雾港蓝焰', premise: '调查失踪案', mainConflict: '记录与记忆冲突', fullOutline: '从港务记录追到旧灯塔。', foreshadowing: [], endings: [], playerFreedom: '玩家决定路线' });
+  if (/当前模块：人物 Agent|人物策划/u.test(joined)) {
     const detailed = /粗略版已经确认|characters_detailed_after_rough/u.test(joined);
     return envelope('characters', { phase: detailed ? 'detailed' : (/"mode"\s*:\s*"brief"/u.test(joined) ? 'rough' : 'detailed'), characters: [{ characterId: 'CHAR-001', name: '领航员', tier: '中档', identity: '雾港领航员', goals: ['查清蓝焰异常'], motivation: '保护航线', bottomLine: '不伤害无辜', knowledgeBoundary: '只知道灯塔异常' }] });
   }
-  if (/小章策划/u.test(system)) return envelope('chapters', { chapters: [{ chapterId: 'CH-001', actId: 'ACT-001', title: '记录空白', goals: { required: ['确认领航员缺席'] }, events: ['证词冲突'], endState: '线索指向灯塔', nextHook: '蓝焰亮起' }] });
-  if (/大章策划/u.test(system)) return envelope('acts', { acts: [{ actId: 'ACT-001', title: '雾港失踪案', goal: '找到领航员', conflict: '记录与证词冲突', requiredEvents: ['检查港务记录'], outcome: '发现导航被改动', nextHook: '进入禁航区' }] });
-  if (/总纲策划/u.test(system)) return envelope('outline', { title: '雾港蓝焰', premise: '调查失踪案', mainConflict: '公开记录与私人记忆冲突', fullOutline: '从港务记录追到旧灯塔，再进入禁航区。', foreshadowing: [], endings: [], playerFreedom: '路线与结局由玩家选择' });
+  if (/当前模块：小章 Agent|小章策划/u.test(joined)) return envelope('chapters', { chapters: [{ chapterId: 'CH-001', actId: 'ACT-001', title: '记录空白', requiredGoals: [{ goalId: 'CH-001-G1', actGoalId: 'ACT-001-G1', text: '确认领航员缺席', completionCondition: '记录明确显示缺席' }], dailyTasks: [], keyEvents: ['证词冲突'], endingState: '线索指向灯塔', nextHook: '蓝焰亮起' }] });
+  if (/当前模块：大章 Agent|大章策划/u.test(joined)) return envelope('acts', { acts: [{ actId: 'ACT-001', title: '雾港失踪案', coreConflict: '记录与证词冲突', actGoals: [{ goalId: 'ACT-001-G1', text: '找到领航员', dramaticHook: '个人赌注：航线即将关闭', completionCondition: '领航员去向被证实' }], keyEvents: ['检查港务记录'], stageResult: '发现导航被改动', nextActConnection: '进入禁航区', estimatedCapacity: 5 }] });
+  if (/当前模块：总纲 Agent|总纲策划/u.test(joined)) return envelope('outline', { title: '雾港蓝焰', premise: '调查失踪案', mainConflict: '公开记录与私人记忆冲突', fullOutline: '从港务记录追到旧灯塔，再进入禁航区。', foreshadowing: [], endings: [], playerFreedom: '路线与结局由玩家选择' });
   return '这是一次剧情讨论回复。';
 }
 
@@ -69,15 +68,15 @@ await test('simulation round 2: brief workflow confirms rough characters before 
   assert.equal(app.state.project.decisions.some(item => item.type === 'character_rough_confirmed'), true);
 });
 
-await test('simulation round 3: lazy workflow checkpoints five artifacts, rolls back and can run again', async () => {
+await test('simulation round 3: lazy workflow checkpoints four artifacts, rolls back and can run again', async () => {
   const app = runtime('lazy');
   const branch = Project.rikiProjectActiveConversation(app.state.project);
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'lazy', { force: true });
   await app.runLazyWorkflow('完整规划雾港失踪案');
   assert.equal(app.state.project.runtime.lazyBatch.status, 'awaiting_confirmation');
-  assert.deepEqual(Project.RIKI_PROJECT_ARTIFACT_KINDS.map(kind => Boolean(Project.rikiProjectCurrentArtifact(app.state.project, kind))), [true, true, true, true, true]);
+  assert.deepEqual(Project.RIKI_PROJECT_ARTIFACT_KINDS.map(kind => Boolean(Project.rikiProjectCurrentArtifact(app.state.project, kind))), [true, true, true, true]);
   Project.rikiProjectRejectLazyBatch(app.state.project);
-  assert.deepEqual(Project.RIKI_PROJECT_ARTIFACT_KINDS.map(kind => Project.rikiProjectCurrentArtifact(app.state.project, kind)), [null, null, null, null, null]);
+  assert.deepEqual(Project.RIKI_PROJECT_ARTIFACT_KINDS.map(kind => Project.rikiProjectCurrentArtifact(app.state.project, kind)), [null, null, null, null]);
   await app.runLazyWorkflow('重新规划雾港失踪案');
   Project.rikiProjectConfirmLazyBatch(app.state.project);
   assert.equal(app.state.project.runtime.lazyBatch.status, 'complete');
@@ -98,6 +97,69 @@ await test('simulation exports all results without device model configuration or
   assert.equal(exported.artifacts.outline.versions.length, 1);
 });
 
+await test('character-bound worldbooks and recent Tavern messages enter the selected planning context', async () => {
+  const adapter = rikiCreateMockAdapter({
+    character: '上下文角色', chatId: 'context',
+    bindings: { character: ['角色设定'] },
+    books: { 角色设定: [{ uid: 7, name: '港口规则', enabled: true, content: '蓝焰只在退潮后点燃。', strategy: { type: 'constant', keys: [] }, position: { type: 'after_character_definition' } }] },
+    recentChatMessages: [
+      { role: 'user', content: `最早正文不应越过预算。${'旧'.repeat(5000)}` },
+      ...Array.from({ length: 198 }, (_, index) => ({ role: 'assistant', content: `中间正文${index}：${'雾'.repeat(5000)}` })),
+      { role: 'user', content: '我刚刚抵达港口。' },
+    ],
+    generateResponse: '先讨论当前线索。',
+  });
+  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  const branch = Project.rikiProjectActiveConversation(app.state.project);
+  Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
+  branch.context.mainChatDepth = -1;
+  await app.refreshInventory();
+  assert.deepEqual(branch.context.selectedWorldbooks, ['角色设定']);
+  assert.deepEqual(branch.context.selectedEntries['角色设定'], ['7']);
+  await app.sendPlanning('先讨论世界设定', { moduleId: 'outline', formal: false });
+  const config = adapter.calls.find(item => item.type === 'generateRaw')?.config || {};
+  const contextMessage = config.ordered_prompts.find(item => item?.role === 'system' && item.content?.includes('<selected_worldbook_context>'));
+  const sent = JSON.stringify(config);
+  assert.match(sent, /蓝焰只在退潮后点燃/);
+  assert.match(sent, /我刚刚抵达港口/);
+  assert.doesNotMatch(sent, /最早正文不应越过预算/);
+  assert.ok(contextMessage.content.length < 49_000, `上下文字符预算失效：${contextMessage.content.length}`);
+});
+
+await test('ready project uses the main controller model only for ambiguous routing', async () => {
+  const adapter = rikiCreateMockAdapter({
+    character: '路由角色', chatId: 'controller',
+    books: { 路由设定: [{ uid: 8, name: '路由证据', enabled: true, content: '第二幕必须发生在旧港。', strategy: { type: 'constant', keys: [] }, position: { type: 'after_character_definition' } }] },
+    bindings: { character: ['路由设定'] },
+    recentChatMessages: [{ role: 'user', content: '我已经抵达旧港。' }],
+    generateResponse(config) {
+      const joined = JSON.stringify(config?.ordered_prompts || []);
+      if (joined.includes('本轮只做路由')) return '{"targetModule":"act","intent":"modify","scope":"调整第二大章","downstream":["chapter","character"],"reason":"用户同时提到大章与人物，但主要动作落在大章"}';
+      return '先从第二大章的阶段目标与人物代价开始讨论。';
+    },
+  });
+  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  const branch = Project.rikiProjectActiveConversation(app.state.project);
+  Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
+  await app.refreshInventory();
+  const confirm = (kind, content) => {
+    const proposal = Project.rikiProjectProposeArtifact(app.state.project, branch, kind, content);
+    Project.rikiProjectConfirmAllProposalItems(branch, proposal.proposalId);
+    Project.rikiProjectConfirmArtifactProposal(app.state.project, branch.id, proposal.proposalId);
+  };
+  confirm('outline', { title: '故事' });
+  confirm('acts', { acts: [{ actId: 'ACT-1', title: '第一幕' }] });
+  confirm('chapters', { chapters: [{ chapterId: 'CH-1', actId: 'ACT-1', title: '第一章' }] });
+  confirm('characters', { phase: 'detailed', characters: [{ characterId: 'CHAR-1', name: '甲' }] });
+  await app.sendPlanning('我想调整大章和人物的衔接', {});
+  assert.equal(adapter.calls.filter(item => item.type === 'generateRaw').length, 2);
+  const controllerCall = JSON.stringify(adapter.calls.filter(item => item.type === 'generateRaw')[0].config);
+  assert.match(controllerCall, /第二幕必须发生在旧港/);
+  assert.match(controllerCall, /我已经抵达旧港/);
+  assert.equal(branch.messages.at(-1).module, 'act');
+  assert.equal(branch.messages.at(-1).request.route.source, 'model-controller');
+});
+
 await test('closing the workbench keeps an in-flight generation alive and reopening reveals completion', async () => {
   let release;
   const pending = new Promise(resolve => { release = resolve; });
@@ -110,7 +172,7 @@ await test('closing the workbench keeps an in-flight generation alive and reopen
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
   app.state.open = true;
   const running = app.sendPlanning('请生成正式总纲候选', { moduleId: 'outline', formal: true });
-  await Promise.resolve();
+  for (let index = 0; index < 20 && !app.state.generation.active; index += 1) await new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(app.state.generation.active, true);
   app.close();
   assert.equal(app.state.generation.background, true);

@@ -28,6 +28,10 @@ function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
+function normalizeLf(value) {
+  return String(value).replace(/\r\n?/g, '\n');
+}
+
 function loaderSource(releaseBase) {
   return `// Riki 剧情工作台版本加载器\n// 发布地址已经固定，日常更新只改下一行。\nconst RIKI_VERSION = '${pkg.version}';\nconst RIKI_RELEASE_BASE = '${releaseBase}';\n\n(async function loadRikiStoryWorkbench() {\n  const hostWindow = (() => {\n    try { return window.parent && window.parent !== window ? window.parent : window; } catch (_) { return window; }\n  })();\n  const statusKey = '__RIKI_STORY_WORKBENCH_LOADER_STATUS__';\n  const url = RIKI_RELEASE_BASE.startsWith('http://127.0.0.1')\n    ? \`${'${RIKI_RELEASE_BASE}'}/${'${RIKI_VERSION}'}/riki-workbench.js\`\n    : \`${'${RIKI_RELEASE_BASE}'}@v${'${RIKI_VERSION}'}/dist/releases/${'${RIKI_VERSION}'}/riki-workbench.js\`;\n  hostWindow[statusKey] = { status: 'loading', version: RIKI_VERSION, url, startedAt: new Date().toISOString() };\n  try {\n    const module = await import(url);\n    if (typeof module.start !== 'function') throw new Error('远程 bundle 未导出 start()');\n    const api = await module.start({ startWindow: window, hostWindow });\n    if (api?.version !== RIKI_VERSION) throw new Error(\`版本校验失败：请求 ${'${RIKI_VERSION}'}，实际 ${'${api?.version || "unknown"}'}\`);\n    hostWindow[statusKey] = { status: 'ready', version: RIKI_VERSION, url, readyAt: new Date().toISOString() };\n  } catch (error) {\n    const message = \`Riki 剧情工作台 ${'${RIKI_VERSION}'} 加载失败：${'${error?.message || error}'}\`;\n    hostWindow[statusKey] = { status: 'failed', version: RIKI_VERSION, url, error: String(error?.message || error), failedAt: new Date().toISOString() };\n    try {\n      const toast = hostWindow.toastr || window.toastr;\n      if (typeof toast?.error === 'function') toast.error(message, 'Riki 剧情工作台');\n      else console.error(message);\n    } catch (_) { console.error(message); }\n  }\n})();\n`;
 }
@@ -52,14 +56,14 @@ fs.mkdirSync(releaseDirectory, { recursive: true });
 fs.mkdirSync(importableDirectory, { recursive: true });
 
 for (const file of sourceFiles) {
-  if (!fs.existsSync(path.join(root, 'src', file))) throw new Error(`缺少 1.1 运行模块：src/${file}`);
+  if (!fs.existsSync(path.join(root, 'src', file))) throw new Error(`缺少当前运行模块：src/${file}`);
 }
 const source = fs.readFileSync(sourcePath, 'utf8');
 if ((source.match(/__RIKI_VERSION__/g) || []).length !== 1) {
   throw new Error('源码必须且只能包含一个 __RIKI_VERSION__ 构建标记');
 }
 const releaseModules = sourceFiles.map(file => {
-  const raw = fs.readFileSync(path.join(root, 'src', file), 'utf8');
+  const raw = normalizeLf(fs.readFileSync(path.join(root, 'src', file), 'utf8'));
   const content = file === 'riki-workbench.js'
     ? raw.replace('__RIKI_VERSION__', pkg.version)
     : raw;

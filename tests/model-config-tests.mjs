@@ -86,9 +86,9 @@ function streamingResponse(chunks) {
   }), { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
 }
 
-await test('module and builtin inventories contain only the seven non-runtime-plug-in planning modules', () => {
+await test('module and builtin inventories contain only the six first-version planning modules', () => {
   assert.deepEqual(RIKI_MODEL_MODULE_IDS, [
-    'main', 'outline', 'act', 'chapter', 'character', 'progression_preset', 'format_guard',
+    'main', 'outline', 'act', 'chapter', 'character', 'format_guard',
   ]);
   const library = rikiDefaultModelLibrary();
   assert.deepEqual(library.systemPresets.map(preset => preset.id).sort(), [
@@ -98,10 +98,14 @@ await test('module and builtin inventories contain only the seven non-runtime-pl
     'builtin_controller',
     'builtin_format_guard',
     'builtin_outline',
-    'builtin_progression_preset',
   ].sort());
   const allSystemText = library.systemPresets.map(preset => preset.content).join('\n');
-  assert.doesNotMatch(allSystemText, /破限|越狱|sex参数|露骨|数据库设计|数据库审查|生图|二创/i);
+  assert.doesNotMatch(allSystemText, /当前模块：数据库|当前模块：推进预设|越狱|sex参数/i);
+  assert.match(allSystemText, /故事发动机/);
+  assert.match(allSystemText, /actGoals/);
+  assert.match(allSystemText, /requiredGoals/);
+  assert.match(allSystemText, /privacyProfile/);
+  assert.match(allSystemText, /source_draft 是不可变事实源/);
   assert.deepEqual([...new Set(library.apiPresets.map(preset => preset.transport))], ['tavern']);
 });
 

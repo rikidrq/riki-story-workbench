@@ -1,6 +1,6 @@
 # Riki 2.2.0 非数据库功能迁移账本
 
-本账本是 Riki 剧情工作台 1.1.0 的完成分母。事实源为只读旧项目 `story-studio-database` 的 `docs/RIKI_FEATURES_FULL.md`、`docs/CONFIRMED_REQUIREMENTS_BASELINE.md`、`src/v0.5/core.js`、`api.js`、`agents.js`、`ui.js`、`integration.js`、`main.js` 与正式 2.2.0 发布包。迁移不是复制数据库内核；任何写有“剔除”的项目都不得以隐藏按钮或默认关闭的形式残留运行代码。
+本账本是 Riki剧情助手 1.2.0 的完成分母。事实源为只读旧项目 `story-studio-database` 的 `README.md`、`docs/RIKI_FEATURES_FULL.md`、`src/v0.5/core.js`、`api.js`、`agents.js`、`ui.js`、`integration.js`、`main.js` 与正式 2.2.0 发布包。迁移不是复制数据库内核；推进预设也按用户最新决定剔除。任何写有“剔除”的项目都不得以隐藏按钮或默认关闭的形式残留运行代码。
 
 状态定义：
 
@@ -13,10 +13,10 @@
 
 ## A. 主工作台与分支会话
 
-| ID | 旧版行为 | 1.1 要求 | 状态 | 证据 |
+| ID | 旧版行为 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
-| A01 | 全屏三栏工作台 | 桌面左分支/Agent、中对话/成果、右上下文/配置 | static | `src/riki-ui.js` |
-| A02 | 手机响应式工作台 | 320/375/430px 单主区 + 底部导航，不依赖 hover | static | `src/riki-ui.js` |
+| A01 | 全屏三栏工作台 | 原版同构：左 Agent 对话、中聊天、右七标签 | static | 原版/新版实际渲染截图 + `src/riki-ui.js` |
+| A02 | 手机响应式工作台 | 原版同构：汉堡对话抽屉 + 齿轮七标签抽屉，无底部导航 | static | 320/375/430px 点击回归 |
 | A03 | 关闭与重开 | 触摸 × 真正隐藏 fixed 遮罩；R 可重开 | automated | `scripts/visual-check.cjs` RF-002 |
 | A04 | 新建 Agent 对话 | 新分支有独立消息、模式、偏好、上下文、待确认候选 | automated | 项目核心 + UI 回归 |
 | A05 | 复制偏好新建 | 复制偏好但不复制待确认候选和运行中请求 | automated | 项目核心测试 |
@@ -26,7 +26,7 @@
 
 ## B. 消息与生成生命周期
 
-| ID | 旧版行为 | 1.1 要求 | 状态 | 证据 |
+| ID | 旧版行为 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
 | B01 | 用户消息编辑 | 修改后截断该轮后续结果，再从同一点重跑 | automated | 项目核心/交互测试 |
 | B02 | 用户消息删除 | 删除用户轮及对应助手结果，不留悬空候选 | automated | 项目核心测试 |
@@ -39,23 +39,23 @@
 
 ## C. 策划 Agent 与工作流
 
-| ID | 模块/模式 | 1.1 要求 | 状态 | 证据 |
+| ID | 模块/模式 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
 | C01 | 主控 Agent | 讨论、访谈、路由，不直接把对话当正式成果 | automated | `src/riki-planning.js` |
 | C02 | 总纲 Agent | 总纲候选、题材/主线/伏笔/结局/自由边界 | automated | schema/prompt |
 | C03 | 大章 Agent | 稳定 actId、目标/冲突/事件/结果/衔接 | automated | schema/prompt |
 | C04 | 小章 Agent | 稳定 chapterId/actId、目标/人物/事件/状态/钩子 | automated | schema/prompt |
 | C05 | 人物 Agent | 粗略分档与精细字段；稳定 characterId | automated | schema/prompt |
-| C06 | 推进预设 Agent | 作为可导出策划成果；不安装数据库 | automated | schema/prompt |
+| C06 | 推进预设 Agent | 用户明确要求剔除；运行源码、预设、成果和 UI 均无此模块 | automated | 发布关键词审计 |
 | C07 | 格式编译 Agent | 机械映射 source draft，不新增事实；继承目标模块模型配置 | automated | 模型集成测试 |
 | C08 | 详细版 | 讨论 → 正文确认 → 正式候选 → 逐项确认 | automated | 端到端测试 |
 | C09 | 粗略版 | 先骨架；人物中上档逐人确认再精细化 | automated | 状态机测试 |
-| C10 | 懒人版 | 总纲→大章→小章→人物→推进预设，逐步 checkpoint、可停可恢复 | automated | 多轮模拟测试 |
+| C10 | 懒人版 | 总纲→大章→小章→人物，逐步 checkpoint、可停可恢复 | automated | 多轮模拟测试 |
 | C11 | 主控路由 | 显式模块优先；关键词/阶段回退；不路由数据库或二创 | automated | `tests/planning-tests.mjs` |
 
 ## D. 正式成果、提案与版本
 
-| ID | 旧版行为 | 1.1 要求 | 状态 | 证据 |
+| ID | 旧版行为 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
 | D01 | 正式成果提案 | 对话输出与成果候选分离；候选不会自动保存 | automated | 项目核心 + 集成 |
 | D02 | 子项确认/打回 | 大章、小章、人物逐项确认，打回项可定向重做 | automated | 项目核心测试 |
@@ -67,7 +67,7 @@
 
 ## E. 模型连接与预设
 
-| ID | 连接/配置 | 1.1 要求 | 状态 | 证据 |
+| ID | 连接/配置 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
 | E01 | 酒馆当前连接 | 调用 Tavern Helper `generateRaw`，不创建主聊天楼层 | automated | adapter mock/真宿主 |
 | E02 | Connection Manager | 仅保存 profile ID；通过 `sendRequest`；不复制酒馆密钥 | automated | 模型单测 |
@@ -77,13 +77,13 @@
 | E06 | 模型列表 | profile/direct 获取；失败时允许手填 | automated | mock HTTP |
 | E07 | 主/默认/模块覆盖 | 模块→默认→主→设备全局继承；模型与 API 层级一致 | automated | 配置测试 |
 | E08 | 格式编译继承 | 默认继承目标模块；自身显式覆盖优先 | automated | 配置测试 |
-| E09 | System 预设 | controller/outline/act/chapter/character/progression/format_guard | automated | 配置测试 |
+| E09 | System 预设 | controller/outline/act/chapter/character/format_guard；每项含原版职责级协议 | automated | 配置测试 + 关键词断言 |
 | E10 | 酒馆 System 快照 | 复制当前启用的 System 内容为新预设 | automated | mock/真宿主 |
 | E11 | 敏感信息边界 | Key 仅 extensionSettings/localStorage；日志/项目/metadata/世界书不得含 Key | automated | 深层扫描测试 |
 
 ## F. 世界书
 
-| ID | 旧版行为 | 1.1 要求 | 状态 | 证据 |
+| ID | 旧版行为 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
 | F01 | 库存与绑定标签 | 全部世界书；聊天/角色/全局排序与标签 | automated | 原 1.0 核心测试/预览 |
 | F02 | 条目级选择 | 每分支独立选择，发送前有上下文字符预算 | automated | 新分支集成测试 |
@@ -95,7 +95,7 @@
 
 ## G. 日志、偏好、导入导出与 Command Core
 
-| ID | 行为 | 1.1 要求 | 状态 | 证据 |
+| ID | 行为 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
 | G01 | 分支偏好 | 偏好值和来源/确认状态可保存、复制、导入 | automated | 项目核心测试 |
 | G02 | 请求日志 | 路由、配置摘要、完整输入/输出、耗时、流式/错误；Key 脱敏 | automated | 模型集成测试 |
@@ -106,18 +106,19 @@
 
 ## H. 明确剔除清单
 
-以下项目在 1.1 源码、产物、菜单、Command Core 和文档使用流程中都不得成为可运行能力：
+以下项目在 1.2 源码、产物、菜单、Command Core 和文档使用流程中都不得成为可运行能力：
 
 - SP·数据库内核；
 - 数据库设计 Agent、数据库审查 Agent；
 - 十一张固定表、动态表、DDL、数据库模板编译/审查/试运行/修复；
 - 安装数据库到聊天、数据库运行期推进/填表/章节判定；
 - 数据库剧情浮窗、数据库更新监听与回放；
+- 推进预设 Agent、成果、System 预设与运行期规则；
 - 灵感二创、二创状态栏、事件/抽卡/特卖/换装；
 - 生图双通道、素材库、智绘姬；
 - 记忆引擎与 MVU 模板迁移（分别属于后续版本）。
 
-发布前必须对 `src/` 与 `dist/releases/1.1.0/` 执行关键词和导出符号审计。文档谈论“被剔除”不算违规，但运行模块若出现对应实现或入口即判失败。
+发布前必须对 `src/` 与 `dist/releases/1.2.0/` 执行关键词和导出符号审计。文档谈论“被剔除”不算违规，但运行模块若出现对应实现或入口即判失败。
 
 ## 最终证据门
 

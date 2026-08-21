@@ -24,22 +24,44 @@ function seedCompleteProject(state = makeState()) {
   confirmProposal(state, conversation, 'acts', { acts: [{ actId: 'ACT001', title: '第一幕' }] });
   confirmProposal(state, conversation, 'chapters', { chapters: [{ chapterId: 'CH001', actId: 'ACT001', title: '第一章' }] });
   confirmProposal(state, conversation, 'characters', { phase: 'detailed', characters: [{ characterId: 'CHAR001', name: '甲' }] });
-  confirmProposal(state, conversation, 'progression_preset', { rules: '保持玩家决定权' });
   return state;
 }
 
-test('模块和成果白名单严格排除数据库与二创', () => {
+test('模块和成果白名单严格排除数据库、推进预设与二创', () => {
   assert.deepEqual(Object.keys(core.RIKI_PROJECT_MODULES), [
-    'main', 'outline', 'act', 'chapter', 'character', 'progression_preset', 'format_guard',
+    'main', 'outline', 'act', 'chapter', 'character', 'format_guard',
   ]);
   assert.deepEqual(core.RIKI_PROJECT_ARTIFACT_KINDS, [
-    'outline', 'acts', 'chapters', 'characters', 'progression_preset',
+    'outline', 'acts', 'chapters', 'characters',
   ]);
   assert.equal(Object.hasOwn(core.RIKI_PROJECT_MODULES, 'database_design'), false);
+  assert.equal(Object.hasOwn(core.RIKI_PROJECT_MODULES, 'progression_preset'), false);
   assert.equal(core.RIKI_PROJECT_ARTIFACT_KINDS.includes('database'), false);
 });
 
-test('新项目建立聊天隔离、五类成果仓与非敏感模型绑定', () => {
+test('1.1 项目升级会丢弃推进预设成果、绑定、消息模块和懒人步骤', () => {
+  const raw = core.rikiProjectCreateState({ chatKey: 'legacy-progression', scriptVersion: '1.1.0' });
+  raw.artifacts.progression_preset = { currentVersionId: 'progression-v1', versions: [{ versionId: 'progression-v1', kind: 'progression_preset', status: 'confirmed', content: { rules: '旧规则' } }] };
+  raw.config.modules.progression_preset = { apiPresetId: 'tavern-current', model: 'legacy-model', systemPresetId: 'builtin_progression_preset' };
+  raw.conversations[0].module = 'progression_preset';
+  raw.conversations[0].messages.push({ id: 'legacy-message', role: 'assistant', module: 'progression_preset', agentRole: 'progression_preset', content: '旧推进内容' });
+  raw.runtime.lazyBatch = {
+    batchId: 'legacy-lazy', conversationId: raw.conversations[0].id, status: 'failed',
+    generated: [{ kind: 'progression_preset', versionId: 'progression-v1' }],
+    steps: [{ kind: 'progression_preset', moduleId: 'progression_preset', status: 'complete', versionId: 'progression-v1' }],
+    snapshot: null,
+  };
+  const normalized = core.rikiProjectNormalizeState(raw, { chatKey: 'legacy-progression', scriptVersion: '1.2.0' });
+  assert.equal(Object.hasOwn(normalized.artifacts, 'progression_preset'), false);
+  assert.equal(Object.hasOwn(normalized.config.modules, 'progression_preset'), false);
+  assert.equal(normalized.conversations[0].module, 'outline');
+  assert.equal(normalized.conversations[0].messages[0].module, '');
+  assert.equal(normalized.conversations[0].messages[0].agentRole, '');
+  assert.equal(normalized.runtime.lazyBatch.generated.some(item => item.kind === 'progression_preset'), false);
+  assert.equal(normalized.runtime.lazyBatch.steps.some(item => item.kind === 'progression_preset'), false);
+});
+
+test('新项目建立聊天隔离、四类成果仓与非敏感模型绑定', () => {
   const state = makeState();
   assert.equal(state.chatKey, 'chat-a');
   assert.equal(state.projectId, 'project-chat-a');
@@ -47,7 +69,6 @@ test('新项目建立聊天隔离、五类成果仓与非敏感模型绑定', ()
   assert.equal(state.conversations.length, 1);
   assert.equal(active(state).title, '故事策划');
   assert.equal(state.config.main.systemPresetId, 'builtin_controller');
-  assert.equal(state.config.modules.progression_preset.systemPresetId, 'builtin_progression_preset');
   assert.equal(state.config.modules.format_guard.systemPresetId, 'builtin_format_guard');
   assert.equal(Object.hasOwn(state.config, 'apiKey'), false);
 });
@@ -356,15 +377,15 @@ test('成果路径编辑拒绝 prototype pollution 关键路径', () => {
 test('级联删除进入一个回收站批次并可整批恢复', () => {
   const state = seedCompleteProject();
   const impact = core.rikiProjectDeletionImpact(state, 'acts');
-  assert.deepEqual(impact.map(item => item.kind), ['acts', 'chapters', 'characters', 'progression_preset']);
+  assert.deepEqual(impact.map(item => item.kind), ['acts', 'chapters', 'characters']);
   const batch = core.rikiProjectDeleteArtifactBatch(state, 'acts', '重做结构');
-  assert.equal(batch.items.length, 4);
+  assert.equal(batch.items.length, 3);
   assert.equal(core.rikiProjectCurrentArtifact(state, 'outline').content.title, '测试故事');
   assert.equal(core.rikiProjectCurrentArtifact(state, 'acts'), null);
   assert.equal(core.rikiProjectStage(state), 'acts_split');
   core.rikiProjectRestoreArtifactBatch(state, batch.batchId);
   assert.equal(core.rikiProjectStage(state), 'ready');
-  assert.equal(core.rikiProjectCurrentArtifact(state, 'progression_preset').content.rules, '保持玩家决定权');
+  assert.equal(core.rikiProjectCurrentArtifact(state, 'characters').content.characters[0].name, '甲');
 });
 
 test('删除后恢复同一基础版本会把已不再过期的候选重置为 pending', () => {
@@ -382,8 +403,8 @@ test('删除后恢复同一基础版本会把已不再过期的候选重置为 p
 test('永久清空回收站只移除未恢复批次中的版本', () => {
   const state = seedCompleteProject();
   const batch = core.rikiProjectDeleteArtifactBatch(state, 'outline');
-  assert.equal(batch.items.length, 5);
-  assert.equal(core.rikiProjectEmptyRecycleBin(state), 5);
+  assert.equal(batch.items.length, 4);
+  assert.equal(core.rikiProjectEmptyRecycleBin(state), 4);
   assert.equal(state.artifacts.outline.versions.length, 0);
   assert.throws(() => core.rikiProjectRestoreArtifactBatch(state, batch.batchId), /不存在或已经恢复/);
 });
@@ -404,10 +425,10 @@ test('回收站恢复先完整预检，缺失任一版本时不会半恢复', ()
 test('永久清空回收站用 kind+versionId 复合键，不误删其他成果同名版本', () => {
   const state = seedCompleteProject();
   const outline = core.rikiProjectCurrentArtifact(state, 'outline');
-  const progression = core.rikiProjectCurrentArtifact(state, 'progression_preset');
-  progression.versionId = outline.versionId;
-  state.artifacts.progression_preset.currentVersionId = outline.versionId;
-  const batch = core.rikiProjectDeleteArtifactBatch(state, 'progression_preset');
+  const characters = core.rikiProjectCurrentArtifact(state, 'characters');
+  characters.versionId = outline.versionId;
+  state.artifacts.characters.currentVersionId = outline.versionId;
+  const batch = core.rikiProjectDeleteArtifactBatch(state, 'characters');
   assert.equal(batch.items[0].versionId, outline.versionId);
   assert.equal(core.rikiProjectEmptyRecycleBin(state), 1);
   assert.equal(core.rikiProjectCurrentArtifact(state, 'outline').versionId, outline.versionId);
@@ -554,7 +575,7 @@ test('已放入回收站且没有当前版本的成果不会被导出后复活',
   assert.throws(() => core.rikiProjectNormalizeExport(payload), /没有任何已确认成果/);
 });
 
-test('项目阶段依次经过总纲、大章、小章、人物、推进预设到 ready', () => {
+test('项目阶段依次经过总纲、大章、小章、人物到 ready', () => {
   const state = makeState();
   const conversation = active(state);
   assert.equal(core.rikiProjectStage(state), 'discovery');
@@ -565,17 +586,15 @@ test('项目阶段依次经过总纲、大章、小章、人物、推进预设�
   confirmProposal(state, conversation, 'chapters', { chapters: [{ chapterId: 'C1' }] });
   assert.equal(core.rikiProjectStage(state), 'characters');
   confirmProposal(state, conversation, 'characters', { characters: [{ characterId: 'P1' }] });
-  assert.equal(core.rikiProjectStage(state), 'progression');
-  confirmProposal(state, conversation, 'progression_preset', { rules: '规则' });
   assert.equal(core.rikiProjectStage(state), 'ready');
   assert.equal(conversation.module, 'main');
 });
 
-test('确定性路由支持五个策划成果与显式主控/格式编译', () => {
+test('确定性路由支持四个策划成果与显式主控/格式编译', () => {
   const state = makeState();
   const conversation = active(state);
   assert.equal(core.rikiProjectRoute(state, conversation, '请开始生成大章'), 'act');
-  assert.equal(core.rikiProjectRoute(state, conversation, '设计人物之后再写推进预设'), 'progression_preset');
+  assert.notEqual(core.rikiProjectRoute(state, conversation, '设计人物之后再写推进预设'), 'progression_preset');
   assert.equal(core.rikiProjectRoute(state, conversation, '随便聊聊', 'main'), 'main');
   assert.equal(core.rikiProjectRoute(state, conversation, '修复结构', 'format_guard'), 'format_guard');
   const analysis = core.rikiProjectRouteAnalysis(state, conversation, '生成大章，然后生成角色');
@@ -609,7 +628,6 @@ test('懒人版保存每步断点、可失败、可统一确认和整批回滚',
     ['acts', { acts: [{ actId: 'ACT001' }] }],
     ['chapters', { chapters: [{ chapterId: 'CH001', actId: 'ACT001' }] }],
     ['characters', { characters: [{ characterId: 'CHAR001' }] }],
-    ['progression_preset', { rules: '规则' }],
   ];
   for (const [kind, content] of steps) {
     core.rikiProjectStartLazyStep(state, kind);

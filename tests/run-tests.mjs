@@ -203,14 +203,18 @@ await test('chat change swaps isolated discussion state and restores it by ident
   assert.deepEqual(runtime.state.conversation.selectedContext, ['测试书::7']);
 });
 
-await test('discussion uses generateRaw without creating host chat messages', async () => {
+await test('worldbook discussion uses the saved Tavern profile without creating host chat messages', async () => {
   const response = '<riki_worldbook_patch>{"bookName":"测试书","entryUid":7,"reason":"优化","changes":{"content":"提案正文"}}</riki_worldbook_patch>';
   const adapter = rikiCreateMockAdapter({ books: { 测试书: [entry()] }, generateResponse: response });
   const runtime = rikiCreateRuntime({ hostWindow: { localStorage: memoryStorage() }, adapter });
+  const profilePreset = runtime.state.modelLibrary.apiPresets.find(item => item.id === 'tavern-profile-default');
+  profilePreset.profileId = 'mock-profile'; profilePreset.model = 'mock-model';
+  runtime.persistModelLibrary(runtime.state.modelLibrary);
   await runtime.refreshInventory();
   runtime.toggleContext('测试书', 7, true);
   await runtime.sendDiscussion('讨论这条设定');
-  assert.equal(adapter.calls.filter(call => call.type === 'generateRaw').length, 1);
+  assert.equal(adapter.calls.filter(call => call.type === 'connection.send').length, 1);
+  assert.equal(adapter.calls.filter(call => call.type === 'generateRaw').length, 0);
   assert.equal(runtime.state.pendingSuggestion.changes.content, '提案正文');
   assert.equal(runtime.state.conversation.messages.length, 2);
 });
@@ -219,11 +223,14 @@ await test('discussion truncates the first oversized worldbook context entry', a
   const oversized = `${'长'.repeat(60000)}TAIL_SHOULD_NOT_BE_SENT`;
   const adapter = rikiCreateMockAdapter({ books: { 测试书: [entry({ content: oversized })] }, generateResponse: '已讨论' });
   const runtime = rikiCreateRuntime({ hostWindow: { localStorage: memoryStorage() }, adapter });
+  const profilePreset = runtime.state.modelLibrary.apiPresets.find(item => item.id === 'tavern-profile-default');
+  profilePreset.profileId = 'mock-profile'; profilePreset.model = 'mock-model';
+  runtime.persistModelLibrary(runtime.state.modelLibrary);
   await runtime.refreshInventory();
   runtime.toggleContext('测试书', 7, true);
   await runtime.sendDiscussion('检查上下文限制');
-  const call = adapter.calls.find(item => item.type === 'generateRaw');
-  const context = call.config.ordered_prompts[1].content;
+  const call = adapter.calls.find(item => item.type === 'connection.send');
+  const context = call.messages.find(item => item.content.includes('<selected_worldbook_context>')).content;
   assert.equal(context.includes('TAIL_SHOULD_NOT_BE_SENT'), false);
   assert.equal(context.includes('[条目内容已按上下文上限截断]'), true);
   assert.equal(context.length < 49000, true);
@@ -286,7 +293,7 @@ await test('component mode emits no card package', () => {
   assert.equal(report.boundaries.cardJson, false);
   assert.equal(report.boundaries.cardPng, false);
   const all = fs.readdirSync(path.join(root, 'dist'), { recursive: true }).map(String);
-  const unexpectedPackages = all.filter(file => /\.charx$/iu.test(file) || (/\.png$/iu.test(file) && !/^preview-(desktop|mobile)\.png$/iu.test(file)));
+  const unexpectedPackages = all.filter(file => /\.charx$/iu.test(file) || (/\.png$/iu.test(file) && !/^preview-(desktop|mobile|config)\.png$/iu.test(file)));
   assert.deepEqual(unexpectedPackages, []);
 });
 

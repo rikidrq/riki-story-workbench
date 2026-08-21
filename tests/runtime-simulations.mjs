@@ -16,19 +16,26 @@ function mockResponse(config) {
   const system = prompts.find(message => message?.role === 'system')?.content || '';
   const joined = prompts.map(message => message?.content || '').join('\n');
   if (/格式编译 Agent/u.test(joined) && /<target_kind>outline/u.test(joined)) return envelope('outline', { title: '编译后的雾港蓝焰', premise: '调查失踪案', mainConflict: '记录与记忆冲突', fullOutline: '从港务记录追到旧灯塔。', foreshadowing: [], endings: [], playerFreedom: '玩家决定路线' });
-  if (/当前模块：人物 Agent|人物策划/u.test(joined)) {
+  if (/当前模块：人物 Agent|人物策划|<target_kind>characters/u.test(joined)) {
     const detailed = /粗略版已经确认|characters_detailed_after_rough/u.test(joined);
     return envelope('characters', { phase: detailed ? 'detailed' : (/"mode"\s*:\s*"brief"/u.test(joined) ? 'rough' : 'detailed'), characters: [{ characterId: 'CHAR-001', name: '领航员', tier: '中档', identity: '雾港领航员', goals: ['查清蓝焰异常'], motivation: '保护航线', bottomLine: '不伤害无辜', knowledgeBoundary: '只知道灯塔异常' }] });
   }
-  if (/当前模块：小章 Agent|小章策划/u.test(joined)) return envelope('chapters', { chapters: [{ chapterId: 'CH-001', actId: 'ACT-001', title: '记录空白', requiredGoals: [{ goalId: 'CH-001-G1', actGoalId: 'ACT-001-G1', text: '确认领航员缺席', completionCondition: '记录明确显示缺席' }], dailyTasks: [], keyEvents: ['证词冲突'], endingState: '线索指向灯塔', nextHook: '蓝焰亮起' }] });
-  if (/当前模块：大章 Agent|大章策划/u.test(joined)) return envelope('acts', { acts: [{ actId: 'ACT-001', title: '雾港失踪案', coreConflict: '记录与证词冲突', actGoals: [{ goalId: 'ACT-001-G1', text: '找到领航员', dramaticHook: '个人赌注：航线即将关闭', completionCondition: '领航员去向被证实' }], keyEvents: ['检查港务记录'], stageResult: '发现导航被改动', nextActConnection: '进入禁航区', estimatedCapacity: 5 }] });
+  if (/当前模块：小章 Agent|小章策划|<target_kind>chapters/u.test(joined)) return envelope('chapters', { chapters: [{ chapterId: 'CH-001', actId: 'ACT-001', title: '记录空白', requiredGoals: [{ goalId: 'CH-001-G1', actGoalId: 'ACT-001-G1', text: '确认领航员缺席', completionCondition: '记录明确显示缺席' }], dailyTasks: [], keyEvents: ['证词冲突'], endingState: '线索指向灯塔', nextHook: '蓝焰亮起' }] });
+  if (/当前模块：大章 Agent|大章策划|<target_kind>acts/u.test(joined)) return envelope('acts', { acts: [{ actId: 'ACT-001', title: '雾港失踪案', coreConflict: '记录与证词冲突', actGoals: [{ goalId: 'ACT-001-G1', text: '找到领航员', dramaticHook: '个人赌注：航线即将关闭', completionCondition: '领航员去向被证实' }], keyEvents: ['检查港务记录'], stageResult: '发现导航被改动', nextActConnection: '进入禁航区', estimatedCapacity: 5 }] });
   if (/当前模块：总纲 Agent|总纲策划/u.test(joined)) return envelope('outline', { title: '雾港蓝焰', premise: '调查失踪案', mainConflict: '公开记录与私人记忆冲突', fullOutline: '从港务记录追到旧灯塔，再进入禁航区。', foreshadowing: [], endings: [], playerFreedom: '路线与结局由玩家选择' });
   return '这是一次剧情讨论回复。';
 }
 
 function runtime(chatId) {
   const adapter = rikiCreateMockAdapter({ character: '模拟角色', chatId, books: { 雾港: [] }, generateResponse: mockResponse });
-  return rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  app.state.modelLibrary.apiPresets[0] = { ...app.state.modelLibrary.apiPresets[0], transport: 'tavern', profileId: '' };
+  return app;
+}
+
+function useMockTavern(app) {
+  app.state.modelLibrary.apiPresets[0] = { ...app.state.modelLibrary.apiPresets[0], transport: 'tavern', profileId: '' };
+  return app;
 }
 
 let passed = 0;
@@ -42,14 +49,18 @@ await test('simulation round 1: detailed workflow discusses, confirms outline an
   const app = runtime('detailed');
   const branch = Project.rikiProjectActiveConversation(app.state.project);
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
-  await app.sendPlanning('请生成正式总纲候选', { moduleId: 'outline', formal: true });
+  const outlineDraft = await app.sendPlanning('请生成正式总纲候选', { moduleId: 'outline', formal: true });
+  assert.equal(outlineDraft.status, 'awaiting_content_confirmation');
+  await app.compileLatestDraft(outlineDraft.id);
   assert.equal(branch.pendingProposal.kind, 'outline');
   const outline = await app.confirmCurrentProposal();
   assert.equal(outline.kind, 'outline');
-  await app.sendPlanning('请生成正式大章候选', { moduleId: 'act', formal: true });
+  const actDraft = await app.sendPlanning('请生成正式大章候选', { moduleId: 'act', formal: true });
+  assert.equal(actDraft.status, 'awaiting_content_confirmation');
+  await app.compileLatestDraft(actDraft.id);
   const act = await app.confirmCurrentProposal();
   assert.equal(act.kind, 'acts');
-  assert.equal(Project.rikiProjectCurrentArtifact(app.state.project, 'outline').content.title, '雾港蓝焰');
+  assert.equal(Project.rikiProjectCurrentArtifact(app.state.project, 'outline').content.title, '编译后的雾港蓝焰');
   assert.equal(Project.rikiProjectCurrentArtifact(app.state.project, 'acts').content.acts[0].actId, 'ACT-001');
   assert.equal(app.state.project.requestLogs.length >= 2, true);
 });
@@ -87,7 +98,8 @@ await test('simulation exports all results without device model configuration or
   const app = runtime('export');
   const branch = Project.rikiProjectActiveConversation(app.state.project);
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
-  await app.sendPlanning('请生成正式总纲候选', { moduleId: 'outline', formal: true });
+  const draft = await app.sendPlanning('请生成正式总纲候选', { moduleId: 'outline', formal: true });
+  await app.compileLatestDraft(draft.id);
   await app.confirmCurrentProposal();
   app.state.modelLibrary.apiPresets.push({ id: 'secret', name: 'secret', transport: 'direct', endpoint: 'https://example.com', apiKey: 'sk-never-export', model: 'm' });
   const exported = Project.rikiProjectBuildExport(app.state.project);
@@ -95,6 +107,32 @@ await test('simulation exports all results without device model configuration or
   assert.equal(raw.includes('sk-never-export'), false);
   assert.equal(raw.includes('apiPresets'), false);
   assert.equal(exported.artifacts.outline.versions.length, 1);
+});
+
+await test('confirmed artifacts sync to an own project book and can migrate to the character book', async () => {
+  const adapter = rikiCreateMockAdapter({
+    character: '同步角色', chatId: 'worldbook-sync',
+    bindings: { character: ['角色原书'] },
+    books: { 角色原书: [{ uid: 9, name: '原有设定', enabled: true, content: '这条不能被覆盖。', strategy: { type: 'constant', keys: [] }, position: { type: 'after_character_definition' } }] },
+    generateResponse: mockResponse,
+  });
+  const app = useMockTavern(rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter }));
+  const branch = Project.rikiProjectActiveConversation(app.state.project);
+  Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
+  const draft = await app.sendPlanning('请生成正式总纲候选', { moduleId: 'outline', formal: true });
+  await app.compileLatestDraft(draft.id);
+  await app.confirmCurrentProposal();
+  const own = app.state.project.runtime.projectWorldbook;
+  assert.equal(own.mode, 'own');
+  assert.equal(adapter.calls.some(item => item.type === 'worldbook.create' && item.name === own.name), true);
+  assert.equal(adapter.calls.some(item => item.type === 'worldbook.bind-chat' && item.name === own.name), true);
+  await app.dispatch('project.worldbook.mode', { mode: 'original' });
+  assert.equal(app.state.project.runtime.projectWorldbook.mode, 'original');
+  assert.equal(app.state.project.runtime.projectWorldbook.name, '角色原书');
+  const original = await adapter.getWorldbook('角色原书');
+  assert.equal(original.some(item => item.name === '原有设定' && item.content === '这条不能被覆盖。'), true);
+  assert.equal(original.some(item => item.name === 'Riki·总纲'), true);
+  assert.equal(adapter.calls.some(item => item.type === 'worldbook.delete' && item.name === own.name), true);
 });
 
 await test('character-bound worldbooks and recent Tavern messages enter the selected planning context', async () => {
@@ -109,7 +147,7 @@ await test('character-bound worldbooks and recent Tavern messages enter the sele
     ],
     generateResponse: '先讨论当前线索。',
   });
-  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  const app = useMockTavern(rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter }));
   const branch = Project.rikiProjectActiveConversation(app.state.project);
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
   branch.context.mainChatDepth = -1;
@@ -138,7 +176,7 @@ await test('ready project uses the main controller model only for ambiguous rout
       return '先从第二大章的阶段目标与人物代价开始讨论。';
     },
   });
-  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  const app = useMockTavern(rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter }));
   const branch = Project.rikiProjectActiveConversation(app.state.project);
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
   await app.refreshInventory();
@@ -167,7 +205,7 @@ await test('closing the workbench keeps an in-flight generation alive and reopen
     character: '模拟角色', chatId: 'background', books: { 雾港: [] },
     generateResponse: async config => { await pending; return mockResponse(config); },
   });
-  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  const app = useMockTavern(rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter }));
   const branch = Project.rikiProjectActiveConversation(app.state.project);
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
   app.state.open = true;
@@ -177,18 +215,21 @@ await test('closing the workbench keeps an in-flight generation alive and reopen
   app.close();
   assert.equal(app.state.generation.background, true);
   release();
-  await running;
-  assert.equal(branch.pendingProposal.kind, 'outline');
+  const draft = await running;
+  assert.equal(draft.status, 'awaiting_content_confirmation');
   app.open();
   assert.equal(app.state.open, true);
   assert.equal(app.state.generation.active, false);
+  await app.compileLatestDraft(draft.id);
+  assert.equal(branch.pendingProposal.kind, 'outline');
 });
 
 await test('Command Core exposes project, branch, artifact and redacted model operations', async () => {
   const app = runtime('command-core');
   const branch = Project.rikiProjectActiveConversation(app.state.project);
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
-  await app.dispatch('planning.send', { text: '请生成正式总纲候选', moduleId: 'outline', formal: true });
+  const draft = await app.dispatch('planning.send', { text: '请生成正式总纲候选', moduleId: 'outline', formal: true });
+  await app.dispatch('planning.confirmContent', { messageId: draft.id });
   await app.dispatch('artifact.confirmProposal');
   const status = await app.dispatch('status');
   assert.equal(status.artifactKinds.outline !== null, true);

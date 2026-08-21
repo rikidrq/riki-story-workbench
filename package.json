@@ -1,6 +1,6 @@
 {
   "name": "riki-story-workbench",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "description": "Versioned Tavern Helper Riki story-planning workbench without database or secondary-creation engines.",
@@ -18,10 +18,11 @@
     "test:actions": "node tests/action-contract-tests.mjs",
     "test:release": "node tests/release-audit-tests.mjs",
     "test": "npm run test:legacy && npm run test:project && npm run test:model && npm run test:planning && npm run test:simulation && npm run test:actions && npm run test:release",
-    "check:syntax": "node --check src/riki-workbench.js && node --check src/riki-project-core.js && node --check src/riki-model-config.js && node --check src/riki-planning.js && node --check src/riki-ui.js && node --check scripts/build.mjs && node --check scripts/preview-server.mjs && node --check scripts/visual-check.cjs",
+    "check:syntax": "node --check src/riki-workbench.js && node --check src/riki-project-core.js && node --check src/riki-model-config.js && node --check src/riki-planning.js && node --check src/riki-ui.js && node --check scripts/build.mjs && node --check scripts/preview-server.mjs && node --check scripts/original-audit-server.mjs && node --check scripts/visual-check.cjs",
     "check:visual": "node scripts/visual-check.cjs",
     "verify": "npm run check:syntax && npm run build && npm test",
     "verify:full": "npm run verify && npm run check:visual",
-    "preview": "node scripts/preview-server.mjs"
+    "preview": "node scripts/preview-server.mjs",
+    "audit:original": "node scripts/original-audit-server.mjs"
   }
 }

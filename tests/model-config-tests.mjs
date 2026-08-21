@@ -106,7 +106,7 @@ await test('module and builtin inventories contain only the six first-version pl
   assert.match(allSystemText, /requiredGoals/);
   assert.match(allSystemText, /privacyProfile/);
   assert.match(allSystemText, /source_draft 是不可变事实源/);
-  assert.deepEqual([...new Set(library.apiPresets.map(preset => preset.transport))], ['tavern']);
+  assert.deepEqual([...new Set(library.apiPresets.map(preset => preset.transport))], ['profile']);
 });
 
 await test('API normalization defaults to tavern and strips copied profile credentials', () => {
@@ -151,6 +151,25 @@ await test('device library persists to extension settings and local storage with
   assert.equal(loaded.apiPresets.find(preset => preset.id === 'direct-a').model, 'story-model');
 });
 
+await test('Tavern profile model selection persists by profile ID without copying URL or API key', () => {
+  const storage = memoryStorage();
+  const rawProfile = { id: 'cm-story', name: '酒馆故事预设', 'api-url': 'https://secret.example/v1', 'secret-id': 'vault-secret', model: 'base-model' };
+  const context = { extensionSettings: { connectionManager: { profiles: [rawProfile] } }, saveSettingsDebounced() {} };
+  const environment = { context, storage, connectionManagerService: { getSupportedProfiles: () => [rawProfile] } };
+  let library = rikiDefaultModelLibrary();
+  library = rikiUpsertApiPreset(library, { id: 'story-profile', name: '剧情模型', transport: 'profile', profileId: 'cm-story', model: 'chosen-model' });
+  library.activeApiPresetId = 'story-profile';
+  rikiSaveModelLibrary(environment, library);
+  const reopened = rikiLoadModelLibrary(environment);
+  const saved = reopened.apiPresets.find(item => item.id === 'story-profile');
+  assert.equal(reopened.activeApiPresetId, 'story-profile');
+  assert.equal(saved.profileId, 'cm-story');
+  assert.equal(saved.model, 'chosen-model');
+  assert.equal(saved.endpoint, '');
+  assert.equal(saved.apiKey, '');
+  assert.doesNotMatch(JSON.stringify(saved), /secret\.example|vault-secret/);
+});
+
 await test('source has no chat-level configuration persistence path', () => {
   const source = fs.readFileSync(path.join(root, 'src', 'riki-model-config.js'), 'utf8');
   assert.equal(source.includes('chatMetadata'), false);
@@ -158,27 +177,27 @@ await test('source has no chat-level configuration persistence path', () => {
   assert.equal(source.includes("transport === 'database'"), false);
 });
 
-await test('multiple API presets can be saved and deleted with tavern fallback protected', () => {
+await test('multiple API presets can be saved and deleted with base Tavern profile protected', () => {
   let library = rikiDefaultModelLibrary();
   library = rikiUpsertApiPreset(library, directPreset());
   library = rikiUpsertApiPreset(library, { id: 'profile-a', name: '酒馆预设 A', transport: 'profile', profileId: 'cm-1' });
-  assert.deepEqual(library.apiPresets.map(preset => preset.id), ['tavern-current', 'direct-a', 'profile-a']);
+  assert.deepEqual(library.apiPresets.map(preset => preset.id), ['tavern-profile-default', 'direct-a', 'profile-a']);
   library.activeApiPresetId = 'direct-a';
   library = rikiDeleteApiPreset(library, 'direct-a');
-  assert.equal(library.activeApiPresetId, 'tavern-current');
+  assert.equal(library.activeApiPresetId, 'tavern-profile-default');
   assert.equal(library.apiPresets.some(preset => preset.id === 'direct-a'), false);
-  library = rikiDeleteApiPreset(library, 'tavern-current');
-  assert.equal(library.apiPresets.some(preset => preset.id === 'tavern-current'), true);
+  library = rikiDeleteApiPreset(library, 'tavern-profile-default');
+  assert.equal(library.apiPresets.some(preset => preset.id === 'tavern-profile-default'), true);
 });
 
-await test('tavern-current stable ID cannot be mutated into a direct or profile transport', () => {
+await test('legacy tavern-current migrates to the editable Tavern profile base without copying secrets', () => {
   const library = rikiNormalizeModelLibrary({
     activeApiPresetId: 'tavern-current',
     apiPresets: [{ id: 'tavern-current', name: '伪装直连', transport: 'direct', endpoint: 'https://evil.invalid/v1', apiKey: 'sk-should-drop', profileId: 'profile-secret', model: 'allowed-model-override' }],
     systemPresets: [],
   });
-  const preset = library.apiPresets.find(item => item.id === 'tavern-current');
-  assert.equal(preset.transport, 'tavern');
+  const preset = library.apiPresets.find(item => item.id === 'tavern-profile-default');
+  assert.equal(preset.transport, 'profile');
   assert.equal(preset.endpoint, '');
   assert.equal(preset.apiKey, '');
   assert.equal(preset.profileId, '');
@@ -291,7 +310,7 @@ await test('tavern transport uses generateRaw current connection and prepends se
       stopGeneration() { return true; },
     },
   };
-  const library = rikiDefaultModelLibrary();
+  const library = rikiNormalizeModelLibrary({ ...rikiDefaultModelLibrary(), activeApiPresetId: 'tavern-legacy', apiPresets: [{ id: 'tavern-legacy', name: '旧版酒馆当前连接', transport: 'tavern' }] });
   const resolved = rikiResolveModuleConfig({ modules: { outline: { model: '酒馆覆盖模型' } } }, 'outline', library);
   const deltas = [];
   const result = await rikiRequestModel(environment, resolved, [{ role: 'user', content: '规划故事' }], {
@@ -316,7 +335,7 @@ await test('tavern transport maps AbortSignal to stopGeneration and rejects Abor
       stopGeneration(id) { stopId = id; return true; },
     },
   };
-  const preset = rikiDefaultModelLibrary().apiPresets[0];
+  const preset = rikiNormalizeApiPreset({ id: 'tavern-legacy', name: '旧版酒馆当前连接', transport: 'tavern' });
   const controller = new AbortController();
   const request = rikiRequestModel(environment, resolvedFor(preset), [{ role: 'user', content: '开始' }], { signal: controller.signal });
   controller.abort();

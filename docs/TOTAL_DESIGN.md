@@ -25,16 +25,16 @@
 - 核心对象：ProjectState、AgentConversation、PlanningArtifact、ArtifactProposal、ArtifactVersion、RecycleBatch、ModelPreset、SystemPreset、ModuleBinding、Worldbook、WorldbookEntry、Patch、HistoryRecord、RequestLog、CapabilityReport。
 - 主循环：选择模式与模块 → 读取世界书上下文 → 主控/确定性路由 → 流式策划 → 形成候选 → 逐项确认 → 保存版本/回收站 → 可选原世界书 Diff 写回。
 - 交付协议：稳定脚本 ID + 微型加载器 + `dist/releases/<version>/riki-workbench.js`。
-- 模型连接：酒馆当前连接、Connection Manager profile、独立 OpenAI-compatible API；API 密钥仅保存到设备级设置/本地存储，聊天 metadata、项目导出、日志和世界书均不得包含密钥。
+- 模型连接：引用酒馆 Connection Manager profile（沿用 URL、密钥库引用与 Settings Preset）或独立 OpenAI-compatible API；API 密钥仅保存到酒馆密钥库或设备级设置，项目导出、日志和世界书不得包含密钥。
 - 模块体系：主控、总纲、大章、小章、人物、格式编译；主 Agent 默认配置可被模块级 API、模型和 System 预设覆盖。
-- 最低宿主能力：只读策划可在模型连接可用时运行；世界书库存要求 `getWorldbookNames/getWorldbook`；写入额外要求 `updateWorldbookWith`；酒馆当前连接要求 `generateRaw`；Connection Manager 仅保存 profile ID。
+- 最低宿主能力：只读策划可在模型连接可用时运行；世界书库存要求 `getWorldbookNames/getWorldbook`；写入额外要求 `updateWorldbookWith`；Connection Manager 要求 `getSupportedProfiles/sendRequest`，Riki 仅保存 profile ID。
 - 并发边界：Riki 对自身写入使用每书队列，并在可用时使用 Web Locks；Tavern Helper 当前 API 无原子 CAS，外部编辑器同瞬间写入仍需真实宿主竞态验收。
 
 ## First Playable / First Usable
 
-用户导入加载器后可在原版同构的全屏三栏工作台中创建、复制偏好、重命名和删除 Agent 分支会话；选择详细版、粗略版或懒人版；由主控路由到总纲、大章、小章或人物 Agent；流式查看、停止、编辑、删除、重 Roll 与复制消息；把模型输出转成可逐项确认的正式成果候选，并在版本链、Diff 和回收站中管理成果。
+用户导入加载器后可在原版同构的全屏三栏工作台中创建、复制偏好、重命名和删除 Agent 分支会话；新对话选择常规版或懒人版；由主控路由到总纲、大章、小章或人物 Agent；流式查看、停止、编辑、删除、重 Roll 与复制消息；把模型输出转成可逐项确认的正式成果候选，并在版本链、Diff 和回收站中管理成果。
 
-用户可配置酒馆当前连接、Connection Manager profile 或独立 OpenAI-compatible API，保存多套 API/System 预设，为主 Agent 和各模块设置覆盖，并运行模型列表获取或手填模型。格式编译 Agent 默认继承目标模块配置。
+用户可引用酒馆 Connection Manager profile 或配置独立 OpenAI-compatible API，查看酒馆 URL/Key 引用状态，获取或手填模型并保存多套 API/System 预设；主控、默认和各 Agent 可独立覆盖，格式编译默认继承目标模块配置。
 
 世界书继续提供库存、绑定标签、条目级上下文选择、原条目编辑、Diff、陈旧写入拒绝、写后重读和撤销。所有讨论与策划都不创建主聊天楼层，不触发数据库或二创运行时。
 
@@ -61,7 +61,7 @@
 
 ## 验收账本
 
-- automated：1.2 已通过 21 项旧世界书、49 项项目状态机、28 项模型连接、9 项策划契约、9 项运行模拟、80 action 合同和发布审计；推进预设排除、1.1 升级剔除、角色绑定世界书默认选择、近期正文预算和模型主控歧义路由均有专门断言。
+- automated：1.3 已通过 21 项世界书、50 项项目状态机、29 项模型连接、9 项策划契约、10 项运行模拟、99 action 合同和发布审计；推进预设排除、旧粗略状态兼容、正文确认→格式编译门、人物槽位版本化回填、独立/角色原世界书同步、近期正文预算、酒馆 profile 模型链和主控歧义路由均有专门断言。
 - static-preview：已通过桌面 1440×900 与手机 320×700、375×812、430×900 的完整点击旅程；覆盖移动关闭/重开、汉堡/齿轮抽屉、模型配置、世界书写入/撤销、成果版本/回收站、导入导出和诊断。
 - real-host：待真实 Tavern Helper 导入、加载、生成、写入、撤销、切聊天与移动端测试。
 - driver：已授权执行，尚未验收成品。

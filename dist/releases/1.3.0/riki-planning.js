@@ -1,3 +1,4 @@
+/* Riki Story Workbench 1.3.0 | generated from src/riki-planning.js */
 export const RIKI_PLANNING_MODULES = Object.freeze({
   main: { label: '主控 Agent', icon: '⌘', artifactKind: '', description: '访谈、讨论、判断意图并路由到合适的策划模块。' },
   outline: { label: '总纲 Agent', icon: '纲', artifactKind: 'outline', description: '题材定位、主线因果、伏笔回收、结局与自由探索边界。' },

@@ -22,14 +22,17 @@ const mustBeClickable = [
   'preference-save', 'preference-edit', 'preference-confirm', 'preference-confirm-all', 'preference-delete', 'preference-clear',
   'workflow-mode', 'lazy-start', 'module-select', 'planning-send', 'generate-formal', 'generation-stop',
   'message-edit', 'message-edit-save', 'message-delete', 'message-reroll', 'message-copy',
-  'proposal-item', 'proposal-confirm-all', 'proposal-edit', 'proposal-edit-save', 'proposal-reject',
-  'artifact-kind', 'artifact-version', 'artifact-copy', 'artifact-edit', 'artifact-edit-save', 'artifact-delete',
+  'content-confirm-compile', 'content-return-controller',
+  'proposal-item', 'proposal-regenerate-rejected', 'proposal-confirm-all', 'proposal-edit', 'proposal-edit-save', 'proposal-reject',
+  'artifact-kind', 'artifact-version', 'artifact-copy', 'artifact-edit', 'artifact-edit-save', 'artifact-delete', 'artifact-backfill-slots',
   'trash-toggle', 'trash-restore', 'trash-empty',
-  'worldbook-refresh', 'book-select', 'entry-select', 'context-toggle', 'worldbook-preview', 'worldbook-apply', 'worldbook-undo',
+  'worldbook-refresh', 'book-select', 'entry-select', 'context-toggle', 'worldbook-discuss', 'worldbook-suggestion-load', 'worldbook-suggestion-reject', 'worldbook-preview', 'worldbook-apply', 'worldbook-undo',
   'project-export', 'project-import',
-  'api-new', 'api-select', 'api-save', 'api-delete', 'models-fetch',
+  'export-preview-confirm', 'export-preview-copy', 'export-preview-cancel',
+  'routing-fallback', 'api-new', 'api-select', 'api-save', 'api-delete', 'models-fetch', 'model-result',
   'settings-module', 'binding-save', 'system-new', 'system-select', 'system-save', 'system-delete', 'system-copy-tavern',
-  'log-select', 'log-mode', 'logs-export', 'logs-clear',
+  'context-filter', 'context-select', 'context-project-book-mode',
+  'log-select', 'log-mode', 'logs-copy', 'logs-export', 'logs-export-all', 'logs-export-conversation', 'logs-clear-conversation', 'logs-clear-all',
 ];
 assert.deepEqual(mustBeClickable.filter(action => !rendered.includes(action)), [], 'critical interaction disappeared from UI');
 

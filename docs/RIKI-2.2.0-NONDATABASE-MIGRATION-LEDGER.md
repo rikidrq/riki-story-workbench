@@ -1,6 +1,6 @@
 # Riki 2.2.0 非数据库功能迁移账本
 
-本账本是 Riki剧情助手 1.2.0 的完成分母。事实源为只读旧项目 `story-studio-database` 的 `README.md`、`docs/RIKI_FEATURES_FULL.md`、`src/v0.5/core.js`、`api.js`、`agents.js`、`ui.js`、`integration.js`、`main.js` 与正式 2.2.0 发布包。迁移不是复制数据库内核；推进预设也按用户最新决定剔除。任何写有“剔除”的项目都不得以隐藏按钮或默认关闭的形式残留运行代码。
+本账本是 Riki剧情助手 1.3.0 的迁移分母；逐项点击事实以 `docs/RIKI-2.2.0-INTERACTION-AUDIT.md` 为准。事实源为只读旧项目 `story-studio-database` 的源码与正式 2.2.0 发布包。迁移不是复制数据库内核；推进预设也按用户最新决定剔除。任何写有“剔除”的项目都不得以隐藏按钮或默认关闭的形式残留运行代码。
 
 状态定义：
 
@@ -48,8 +48,8 @@
 | C05 | 人物 Agent | 粗略分档与精细字段；稳定 characterId | automated | schema/prompt |
 | C06 | 推进预设 Agent | 用户明确要求剔除；运行源码、预设、成果和 UI 均无此模块 | automated | 发布关键词审计 |
 | C07 | 格式编译 Agent | 机械映射 source draft，不新增事实；继承目标模块模型配置 | automated | 模型集成测试 |
-| C08 | 详细版 | 讨论 → 正文确认 → 正式候选 → 逐项确认 | automated | 端到端测试 |
-| C09 | 粗略版 | 先骨架；人物中上档逐人确认再精细化 | automated | 状态机测试 |
+| C08 | 常规版 | 讨论 → 正文确认 → 正式候选 → 逐项确认 | automated | 端到端测试 |
+| C09 | 粗略版旧状态 | 只保留旧项目迁移与继续，不作为新入口 | automated | 状态机测试 |
 | C10 | 懒人版 | 总纲→大章→小章→人物，逐步 checkpoint、可停可恢复 | automated | 多轮模拟测试 |
 | C11 | 主控路由 | 显式模块优先；关键词/阶段回退；不路由数据库或二创 | automated | `tests/planning-tests.mjs` |
 
@@ -69,7 +69,7 @@
 
 | ID | 连接/配置 | 1.2 要求 | 状态 | 证据 |
 |---|---|---|---|---|
-| E01 | 酒馆当前连接 | 调用 Tavern Helper `generateRaw`，不创建主聊天楼层 | automated | adapter mock/真宿主 |
+| E01 | 引用酒馆连接预设 | 读取 profile URL/Key 引用与 Settings Preset，只保存 profile ID，可获取/选择/保存模型 | automated | 原版浏览器点击 + profile mock/真宿主 |
 | E02 | Connection Manager | 仅保存 profile ID；通过 `sendRequest`；不复制酒馆密钥 | automated | 模型单测 |
 | E03 | 独立 OpenAI-compatible | direct SSE；默认 `viaBackend=false`；Abort/超时 | automated | 模型单测 |
 | E04 | Failed to fetch 诊断 | 明确 CORS、HTTPS 混合内容、不可达；不静默换传输 | automated | 负路径测试 |
@@ -118,12 +118,12 @@
 - 生图双通道、素材库、智绘姬；
 - 记忆引擎与 MVU 模板迁移（分别属于后续版本）。
 
-发布前必须对 `src/` 与 `dist/releases/1.2.0/` 执行关键词和导出符号审计。文档谈论“被剔除”不算违规，但运行模块若出现对应实现或入口即判失败。
+发布前必须对 `src/` 与 `dist/releases/1.3.0/` 执行关键词和导出符号审计。文档谈论“被剔除”不算违规，但运行模块若出现对应实现或入口即判失败。
 
 ## 最终证据门
 
 1. 所有 `pending/implemented` 项至少达到 `automated`；纯视觉项达到 `static`。
 2. Node 单元/集成测试、构建、语法、组件格式、权限/敏感信息扫描全部通过。
 3. Playwright 至少在桌面 1440×900、手机 320×700、375×812、430×900 跑完整点击巡检，而不只是截图。
-4. 再运行三轮模拟项目：详细版、粗略版、懒人版；每轮生成 mock 成果、确认版本、修改、打回/重 Roll、导出再导入。
+4. 再运行三轮兼容模拟：常规版、旧粗略状态迁移、懒人版；新建对话只能看到常规版/懒人版。每轮生成 mock 成果、确认版本、修改、打回/重 Roll、导出再导入。
 5. 真实酒馆与真机仍是独立门；未取得真实证据前不得把 `real-host` 或 `driver-accepted` 标为通过。

@@ -349,6 +349,24 @@ test('人物粗略版只为中上档建立逐项门并不保存正式人物成�
   assert.equal(conversation.strategyProgress.character.status, 'generating');
 });
 
+test('人物槽位回填为大章和小章建立新版本且不覆盖旧成果', () => {
+  const state = makeState('slot-backfill');
+  const conversation = active(state);
+  confirmProposal(state, conversation, 'acts', { acts: [{ actId: 'ACT001', title: '第一幕', keyEvents: ['{{HIGH1}}在灯塔失踪'] }] });
+  confirmProposal(state, conversation, 'chapters', { chapters: [{ chapterId: 'CH001', actId: 'ACT001', title: '第一章', characters: [{ name: '{{HIGH1}}', purpose: '留下蓝焰线索' }] }] });
+  const oldAct = core.rikiProjectCurrentArtifact(state, 'acts');
+  const oldChapter = core.rikiProjectCurrentArtifact(state, 'chapters');
+  const characters = confirmProposal(state, conversation, 'characters', { phase: 'detailed', characters: [{ characterId: 'CHAR001', name: '林澜', slotRef: 'HIGH1', tier: '上档' }] });
+  const created = core.rikiProjectBackfillCharacterSlots(state, { characterVersion: characters, conversationId: conversation.id });
+  assert.equal(created.length, 2);
+  assert.equal(oldAct.status, 'superseded');
+  assert.equal(oldChapter.status, 'superseded');
+  assert.match(JSON.stringify(core.rikiProjectCurrentArtifact(state, 'acts').content), /林澜/u);
+  assert.match(JSON.stringify(core.rikiProjectCurrentArtifact(state, 'chapters').content), /林澜/u);
+  assert.equal(core.rikiProjectCurrentArtifact(state, 'acts').baseVersionId, oldAct.versionId);
+  assert.equal(core.rikiProjectBackfillCharacterSlots(state, { characterVersion: characters }).length, 0);
+});
+
 test('成果工作台 Diff 和修改候选保持当前版本不可直接覆盖', () => {
   const state = makeState();
   const conversation = active(state);

@@ -1,4 +1,4 @@
-import { start, rikiCreateMockAdapter } from '/releases/1.2.0/riki-workbench.js';
+import { start, rikiCreateMockAdapter } from '/releases/1.3.0/riki-workbench.js?preview=1.3.0-ui2';
 
 const adapter = rikiCreateMockAdapter({
   character: '林间旅人',
@@ -20,6 +20,16 @@ const adapter = rikiCreateMockAdapter({
     const prompts = Array.isArray(config?.ordered_prompts) ? config.ordered_prompts : [];
     const joined = prompts.map(item => typeof item === 'string' ? item : item?.content || '').join('\n');
     const envelope = (kind, summary, content) => `已完成${summary}，请检查后确认。\n<riki_artifact>${JSON.stringify({ kind, summary, changeLevel: 'major', mergeMode: 'replace', content })}</riki_artifact>`;
+    if (prompts.some(item => item?.role === 'system' && /Riki 剧情工作台中的剧情讨论助手/u.test(item?.content || ''))) return `这个改动会让蓝焰异常更早成为可追查线索，同时保持玩家决定调查顺序。\n<riki_worldbook_patch>${JSON.stringify({ bookName: '当前剧情书', entryUid: 1, reason: '补充可观察线索但不替玩家决定行动', changes: { content: '主角刚抵达雾港，正在寻找失踪的领航员；港口蓝焰在无风时短暂偏白，但无人承认见过。' } })}</riki_worldbook_patch>`;
+    if (/Markdown 标题、列表和引用/u.test(joined)) return `## 三个可继续讨论的剧情方向
+
+> 先选故事发动机，不急着保存正式成果。
+
+- **记忆悬疑**：港务记录与所有人的私人记忆互相冲突。
+- **政治抉择**：公开蓝焰真相会让整个港口失去贸易命脉。
+- **关系困局**：失踪领航员主动隐瞒了主角最信任的人。
+
+你更想优先体验哪一种冲突？`;
     if (/人物 Agent|人物策划|<target_kind>characters|"kind"\s*:\s*"characters"/u.test(joined)) return envelope('characters', '人物候选', { phase: 'detailed', characters: [{ characterId: 'CHAR-001', name: '失踪的领航员', tier: '中档', identity: '雾港领航员', appearanceAnchors: ['蓝焰灼痕'], personalityBehaviors: ['在危险前先检查同伴退路'], goals: ['查清旧灯塔记录被篡改的原因'], motivation: '保护港口航线', bottomLine: '不牺牲无辜者', knowledgeBoundary: '知道蓝焰异常但不知道幕后主使', relationships: [], secrets: ['曾在失踪前私下进入旧灯塔'] }] });
     if (/小章 Agent|小章策划|<target_kind>chapters|"kind"\s*:\s*"chapters"/u.test(joined)) return envelope('chapters', '小章候选', { chapters: [{ chapterId: 'CH-001', actId: 'ACT-001', title: '港务记录的空白', timeRange: '抵达当晚', goals: { required: ['确认领航员未值班'], normal: ['询问港务员'], optional: ['检查蓝焰残留'] }, characters: [{ characterId: 'CHAR-001', purpose: '通过缺席留下矛盾线索' }], events: ['值班记录与目击证词冲突'], knowledgeBoundary: '玩家只知道记录异常', endState: '线索指向旧灯塔', nextHook: '蓝焰在无人处重新亮起' }] });
     if (/大章 Agent|大章策划|<target_kind>acts|"kind"\s*:\s*"acts"/u.test(joined)) return envelope('acts', '大章候选', { acts: [{ actId: 'ACT-001', title: '雾港失踪案', goal: '找到失踪领航员', conflict: '港务记录与私人证词互相矛盾', routes: ['追查港务记录', '调查旧灯塔'], requiredEvents: ['确认领航员当晚未值班'], outcome: '发现蓝焰导航系统被人为改动', nextHook: '线索指向港外禁航区' }] });

@@ -55,7 +55,7 @@ async function desktopJourney(page, result) {
   result.journey.strategySelected = await root.locator('[data-field="composer"]').isEnabled();
   await root.locator('[data-action="conversation-new"]').click();
   result.journey.branchCreated = await root.locator('[data-action="conversation-select"]').count() >= 2;
-  await root.locator('[data-action="workflow-mode"][data-mode="brief"]').click();
+  await root.locator('[data-action="workflow-mode"][data-mode="detailed"]').click();
   await root.locator('[data-action="right-tab"][data-tab="preferences"]').click();
   await root.locator('[data-action="conversation-copy"]').click();
   result.journey.branchCopied = await root.locator('[data-action="conversation-select"]').count() >= 3;
@@ -68,7 +68,6 @@ async function desktopJourney(page, result) {
   await root.locator('[data-field="preference-value"]').fill('铺垫—冲突—回报，避免连续灌设定。');
   await root.locator('[data-action="preference-save"]').click();
   result.journey.preferenceSaved = await root.locator('.preference-row').count() === 1;
-  await root.locator('[data-action="preference-confirm"]').click();
   result.journey.preferenceConfirmed = (await root.locator('.preference-row').innerText()).includes('已确认');
 
   await root.locator('[data-action="right-tab"][data-tab="agent"]').click();
@@ -79,13 +78,13 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="module-select"][data-module="outline"]').click();
 
   await root.locator('[data-action="right-tab"][data-tab="config"]').click();
-  await view(page, 'settings');
-  result.journey.settingsVisible = await root.locator('.settings-card').count() === 3;
+  result.journey.settingsVisible = await root.locator('.config-panel-original').isVisible();
   await root.locator('[data-action="api-new"]').click();
   await root.locator('[data-model-field="name"]').fill('视觉测试 API');
-  await root.locator('[data-model-field="endpoint"]').fill('https://example.invalid/v1');
-  await root.locator('[data-model-field="model"]').fill('mock-model');
-  await root.locator('[data-model-field="apiKey"]').fill('sk-visual-secret');
+  await root.locator('[data-model-field="transport"]').selectOption('profile');
+  await root.locator('[data-model-field="profileId"]').selectOption('mock-profile');
+  await root.locator('[data-action="models-fetch"]').click();
+  await root.locator('[data-action="model-result"]').selectOption('mock-model');
   await root.locator('[data-action="api-save"]').click();
   result.journey.apiSaved = await root.locator('[data-action="api-select"] option', { hasText: '视觉测试 API' }).count() === 1;
   await root.locator('[data-action="system-new"]').click();
@@ -99,18 +98,24 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="binding-save"]').click();
   result.journey.bindingSaved = (await root.locator('.resolution-box').innerText()).includes('mock-model');
   await root.locator('[data-action="settings-module"]').selectOption('outline');
-  await root.locator('[data-binding-field="apiPresetId"]').selectOption('tavern-current');
+  await root.locator('[data-binding-field="apiPresetId"]').selectOption({ label: '视觉测试 API' });
   await root.locator('[data-binding-field="model"]').fill('');
   await root.locator('[data-action="binding-save"]').click();
   result.bindingReset = await root.locator('.resolution-box').innerText();
-  await root.locator('[data-action="api-select"]').selectOption('tavern-current');
-  await root.locator('[data-action="api-save"]').click();
+  await root.locator('[data-action="api-select"]').selectOption({ label: '视觉测试 API' });
+  await page.screenshot({ path: path.join(rootPath(), 'dist', 'preview-config.png'), fullPage: true });
 
   await root.locator('[data-action="right-tab"][data-tab="context"]').click();
   await view(page, 'worldbook');
   await root.locator('[data-action="book-select"]').first().click();
   await root.locator('[data-action="entry-select"]').first().click();
   await root.locator('[data-action="context-toggle"]').first().click();
+  await root.locator('[data-field="worldbook-discussion"]').fill('讨论这条设定，并给出一个受控世界书修改提案。');
+  await root.locator('[data-action="worldbook-discuss"]').click();
+  await root.locator('.suggestion-card').waitFor({ state: 'visible' });
+  result.journey.worldbookModelSuggestion = true;
+  await root.locator('[data-action="worldbook-suggestion-load"]').click();
+  result.journey.worldbookSuggestionLoaded = (await root.locator('[data-field="wb-content"]').inputValue()).includes('蓝焰');
   await root.locator('[data-field="wb-content"]').fill('视觉测试修改：主角从港务记录发现领航员当晚并未值班。');
   await root.locator('[data-action="worldbook-preview"]').click();
   result.journey.worldbookDiff = await root.locator('.modal[aria-label="世界书 Diff"]').isVisible();
@@ -125,6 +130,15 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="generate-formal"]').click();
   await page.waitForFunction(() => {
     const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
+    return Boolean(shadow?.querySelector('.content-confirmation,.message-error'));
+  });
+  if (!(await root.locator('.content-confirmation').isVisible())) {
+    throw new Error(`formal content pass failed: ${await root.locator('.message-assistant').last().innerText()}`);
+  }
+  result.journey.contentConfirmationGate = true;
+  await root.locator('[data-action="content-confirm-compile"]').click();
+  await page.waitForFunction(() => {
+    const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
     return Boolean(shadow?.querySelector('.proposal-card,.message-error'));
   });
   if (!(await root.locator('.proposal-card').isVisible())) {
@@ -134,8 +148,10 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="proposal-confirm-all"]').click();
   await root.locator('[data-action="right-tab"][data-tab="artifacts"]').click();
   result.journey.artifactConfirmed = await root.locator('[data-action="open-artifact"][data-kind="outline"]').evaluate(node => node.classList.contains('complete'));
-  const projectDownloadPromise = page.waitForEvent('download');
   await root.locator('[data-action="project-export"]').first().click();
+  result.journey.projectExportPreview = await root.locator('.export-preview').isVisible();
+  const projectDownloadPromise = page.waitForEvent('download');
+  await root.locator('[data-action="export-preview-confirm"]').click();
   const projectDownload = await projectDownloadPromise;
   const projectDownloadPath = await projectDownload.path();
   result.journey.projectExport = Boolean(projectDownloadPath) && (await projectDownload.suggestedFilename()).endsWith('.json');
@@ -188,6 +204,7 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="artifact-delete"]').click();
   result.journey.artifactDeletedToTrash = await root.locator('[data-action="trash-restore"]').isVisible();
   await root.locator('[data-action="trash-restore"]').click();
+  await root.locator('[data-action="artifact-edit"]').waitFor({ state: 'visible' });
   result.journey.artifactRestored = await root.locator('[data-action="artifact-edit"]').isVisible();
 
   if (projectDownloadPath) {
@@ -206,8 +223,10 @@ async function desktopJourney(page, result) {
   result.journey.logsVisible = await root.locator('[data-action="log-select"]').count() >= 1;
   await root.locator('[data-action="log-mode"][data-mode="input"]').click();
   result.journey.logInputVisible = (await root.locator('.log-detail pre').innerText()).includes('messages');
-  const logDownloadPromise = page.waitForEvent('download');
   await root.locator('[data-action="logs-export"]').click();
+  result.journey.logExportPreview = await root.locator('.export-preview').isVisible();
+  const logDownloadPromise = page.waitForEvent('download');
+  await root.locator('[data-action="export-preview-confirm"]').click();
   const logDownload = await logDownloadPromise;
   result.journey.logExport = (await logDownload.suggestedFilename()).endsWith('.json');
   const secretLeak = await page.evaluate(() => [...Array(localStorage.length)].some((_, index) => {

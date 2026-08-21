@@ -26,6 +26,11 @@ function safeFile(urlPath) {
 }
 
 const server = http.createServer((request, response) => {
+  if ((request.url || '').split('?')[0] === '/api/backends/chat-completions/status') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+    response.end(JSON.stringify({ data: [{ id: 'mock-model' }, { id: 'mock-model-fast' }] }));
+    return;
+  }
   const target = safeFile(request.url || '/');
   if (!target || !fs.existsSync(target) || !fs.statSync(target).isFile()) {
     response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });

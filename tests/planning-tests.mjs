@@ -46,7 +46,7 @@ await test('stage advances only through confirmed current artifact chain', () =>
 });
 
 await test('three workflow contracts remain distinct', () => {
-  assert.match(rikiModeContract('detailed', 'outline', {}), /详细版/);
+  assert.match(rikiModeContract('detailed', 'outline', {}), /常规版/);
   assert.match(rikiModeContract('rough', 'character', {}), /粗略版/);
   assert.match(rikiModeContract('lazy', 'chapter', {}), /懒人版/);
 });

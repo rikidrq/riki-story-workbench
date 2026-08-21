@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "checkedAt": "2026-08-21T15:32:48.828Z",
+  "checkedAt": "2026-08-21T18:20:45.006Z",
   "results": [
     {
       "viewport": "desktop-1440x900",
@@ -36,11 +36,15 @@
         "apiSaved": true,
         "systemSaved": true,
         "bindingSaved": true,
+        "worldbookModelSuggestion": true,
+        "worldbookSuggestionLoaded": true,
         "worldbookDiff": true,
         "worldbookApplied": true,
         "worldbookUndo": true,
+        "contentConfirmationGate": true,
         "proposalCreated": true,
         "artifactConfirmed": true,
+        "projectExportPreview": true,
         "projectExport": true,
         "rerollWorked": true,
         "messageCopy": true,
@@ -53,21 +57,24 @@
         "projectImport": true,
         "logsVisible": true,
         "logInputVisible": true,
+        "logExportPreview": true,
         "logExport": true,
         "secretExcludedFromProject": true
       },
-      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"tavern-current\",\n  \"apiPresetName\": \"酒馆当前连接\",\n  \"transport\": \"tavern\",\n  \"model\": \"\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"\",\n  \"profile\": null,\n  \"credential\": \"由酒馆当前连接管理\",\n  \"systemPresetId\": \"system-7-efaae27d-05a1-41e2-929e-63f3aa678d89\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
-      "rerolledText": "大章 Agent\n完成\n2026-08-21 15:32\n已完成大章候选，请检查后确认。\n重 Roll\n复制\n删除",
+      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"api-2-e03a7f61-83b9-4f06-bbcd-80db005ddb2a\",\n  \"apiPresetName\": \"视觉测试 API\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"https://mock.invalid/v1\",\n  \"profile\": {\n    \"id\": \"mock-profile\",\n    \"name\": \"模拟酒馆连接预设\",\n    \"api\": \"openai\",\n    \"mode\": \"\",\n    \"model\": \"mock-model\",\n    \"models\": [\n      \"mock-model\"\n    ],\n    \"tavernPreset\": \"模拟写作预设\",\n    \"endpoint\": \"https://mock.invalid/v1\",\n    \"credential\": \"酒馆密钥库引用（已隐藏）\"\n  },\n  \"credential\": \"酒馆密钥库引用（已隐藏）\",\n  \"systemPresetId\": \"system-7-d7dd4dde-4c1a-4d5d-a1b2-03a48898f6ac\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
+      "rerolledText": "R\n大章 Agent\n大章 Agent\n18:20\n\n已完成大章候选，请检查后确认。\n\n请求详情\n重 Roll\n删除\n复制",
       "rerollCounts": {
-        "before": 2,
-        "after": 2
+        "before": 4,
+        "after": 4
       },
       "logRows": [
-        "大章 Agent\n完成\n2026-08-21 15:32:43 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 15:32:42 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 15:32:42 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 15:32:42 · tavern ·",
-        "总纲 Agent\n完成\n2026-08-21 15:32:42 · tavern ·"
+        "大章 Agent\n完成\n2026-08-21 18:20:38 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-21 18:20:38 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-21 18:20:36 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-21 18:20:35 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-21 18:20:35 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-21 18:20:34 · profile · mock-model",
+        "主控 Agent\n完成\n2026-08-21 18:20:34 · profile · mock-model"
       ]
     },
     {

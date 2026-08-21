@@ -25,11 +25,13 @@
 - TavernWeave component 产物验证已通过，交付边界保持为 `component`，没有生成角色卡 JSON/PNG。
 - 静态预览已通过桌面 1440×900 与手机 320×700、375×812、430×900 检查；无横向溢出、控制台错误或页面错误。
 - 本地第一版实现已完成；真实 SillyTavern/Tavern Helper 导入、写入与移动端手感仍未验收。
+- GitHub 公开仓库 `rikidrq/riki-story-workbench` 已创建，`main` 与不可移动标签 `v1.0.0` 已推送。
+- GitHub Actions Verify 已通过；GitHub raw、标签 raw 与 jsDelivr bundle 的 SHA-256 已和本地逐字节核对一致。
 
 ## 开放风险
 
 - 未取得真实安装的 ST/TH 版本与能力快照。
-- 远程发布地址已固定为 `rikidrq/riki-story-workbench`；首次 GitHub 推送与 CDN 回读待完成。
+- 正式远程地址和 `v1.0.0` 标签已发布；后续版本必须新建 `v<version>` 标签，不能移动旧标签。
 - 动态 import、父页面挂载、世界书持久化和移动端键盘行为需真机验证。
 
 ## 下一道门

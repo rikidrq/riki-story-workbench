@@ -157,6 +157,7 @@ npm run check:visual
 
 - 自动化：构建、语法、21 项核心测试和 TavernWeave component 验证已在本地通过。
 - 静态预览：桌面与 320/375/430px 响应式检查可完成。
+- 远程发布：公开仓库、`main`、`v1.0.0` 标签和 GitHub Actions 已建立；jsDelivr bundle 已与本地 SHA-256 核对一致。
 - 真实宿主：尚未安装或导入到你的实际 SillyTavern/Tavern Helper。
 - 驾驶员：尚未进行真实使用验收。
 

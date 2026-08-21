@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "checkedAt": "2026-08-21T15:29:10.593Z",
+  "checkedAt": "2026-08-21T15:32:48.828Z",
   "results": [
     {
       "viewport": "desktop-1440x900",
@@ -56,18 +56,18 @@
         "logExport": true,
         "secretExcludedFromProject": true
       },
-      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"tavern-current\",\n  \"apiPresetName\": \"酒馆当前连接\",\n  \"transport\": \"tavern\",\n  \"model\": \"\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"\",\n  \"profile\": null,\n  \"credential\": \"由酒馆当前连接管理\",\n  \"systemPresetId\": \"system-7-2f6394b8-ad3e-49d2-b3b0-98d3b04e72c9\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
-      "rerolledText": "大章 Agent\n完成\n2026-08-21 15:29\n已完成大章候选，请检查后确认。\n重 Roll\n复制\n删除",
+      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"tavern-current\",\n  \"apiPresetName\": \"酒馆当前连接\",\n  \"transport\": \"tavern\",\n  \"model\": \"\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"\",\n  \"profile\": null,\n  \"credential\": \"由酒馆当前连接管理\",\n  \"systemPresetId\": \"system-7-efaae27d-05a1-41e2-929e-63f3aa678d89\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
+      "rerolledText": "大章 Agent\n完成\n2026-08-21 15:32\n已完成大章候选，请检查后确认。\n重 Roll\n复制\n删除",
       "rerollCounts": {
         "before": 2,
         "after": 2
       },
       "logRows": [
-        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
-        "总纲 Agent\n完成\n2026-08-21 15:29:03 · tavern ·"
+        "大章 Agent\n完成\n2026-08-21 15:32:43 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 15:32:42 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 15:32:42 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 15:32:42 · tavern ·",
+        "总纲 Agent\n完成\n2026-08-21 15:32:42 · tavern ·"
       ]
     },
     {

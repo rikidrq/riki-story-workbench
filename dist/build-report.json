@@ -7,23 +7,23 @@
   "artifacts": [
     {
       "path": "dist/releases/1.2.0/riki-workbench.js",
-      "sha256": "59b2780278ebed855bcf17976f3bb0da0e78ca9679003ace2e4a93ed13e0dfa2"
+      "sha256": "398c57a56937763873cba5904f94e69781e0cd4feb4e1b024872ed4db051aada"
     },
     {
       "path": "dist/releases/1.2.0/riki-project-core.js",
-      "sha256": "f1cd76e80abdf05ffa2f3f1b78cd3f623e5ec51767f3c4cd9e85be148ce705a5"
+      "sha256": "4fd7eef8723dffe2097a85bd6c6e147e42765181c3594be30aa253bfc26eff9e"
     },
     {
       "path": "dist/releases/1.2.0/riki-model-config.js",
-      "sha256": "79d564631862ae9290415498a03d4221633d4374d1737ee188aab9e2ed2cc1df"
+      "sha256": "d02a1892816c195e00111f2cd4d604f6c58dfa154aded051e443bd4799b77bb0"
     },
     {
       "path": "dist/releases/1.2.0/riki-planning.js",
-      "sha256": "948c864521769c6433454419b5773262484b7c718535cb65e4e6529780e7f6d3"
+      "sha256": "38fe03378572ebd3a9f3314d75e8b9f166fab1480acbb66efbb7633e31760d66"
     },
     {
       "path": "dist/releases/1.2.0/riki-ui.js",
-      "sha256": "c40f58098600a7244e6354db7ecca99b59910e7b42e7bac2a531df7d2ef50933"
+      "sha256": "c9e1d6b3d77da8db848d460010b84d86acf462647af28cd48ecbe16b0a6d7400"
     },
     {
       "path": "dist/酒馆助手脚本-Riki剧情工作台-版本加载器.json",

@@ -4,100 +4,272 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const playwrightPath = process.env.RIKI_PLAYWRIGHT_PATH || 'playwright';
 const { chromium } = require(playwrightPath);
+const baseUrl = process.env.RIKI_PREVIEW_URL || 'http://127.0.0.1:8178/preview';
 
-async function inspect(page, viewportName) {
+const app = page => page.locator('#riki-story-workbench-root');
+
+async function openPreview(page, viewport) {
   const errors = [];
-  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-  page.on('pageerror', error => errors.push(error.message));
-  await page.goto('http://127.0.0.1:8178/preview', { waitUntil: 'networkidle' });
-  await page.waitForSelector('#riki-story-workbench-root', { state: 'attached' });
+  await page.addInitScript(() => localStorage.clear());
+  page.on('console', message => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+  page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
+  page.on('dialog', async dialog => {
+    if (dialog.type() === 'prompt') await dialog.accept(dialog.defaultValue() || '自动测试分支');
+    else await dialog.accept();
+  });
+  await page.goto(baseUrl, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => Boolean(document.querySelector('#riki-story-workbench-root')?.shadowRoot?.querySelector('.shell')));
-  const result = await page.locator('#riki-story-workbench-root').evaluate((host, name) => {
+  return app(page).evaluate((host, name) => {
     const shadow = host.shadowRoot;
     const shell = shadow.querySelector('.shell');
-    const workspace = shadow.querySelector('.workspace');
     const rect = shell.getBoundingClientRect();
     return {
       viewport: name,
       title: shadow.querySelector('h1')?.textContent || '',
       shell: { width: Math.round(rect.width), height: Math.round(rect.height) },
-      workspaceDisplay: getComputedStyle(workspace).display,
-      bookButtons: shadow.querySelectorAll('[data-action="select-book"]').length,
-      entryButtons: shadow.querySelectorAll('[data-action="select-entry"]').length,
+      topViews: [...shadow.querySelectorAll('[data-action="view"]')].map(node => node.dataset.view),
+      modules: [...shadow.querySelectorAll('[data-action="module-select"]')].map(node => node.dataset.module),
+      branches: shadow.querySelectorAll('[data-action="conversation-select"]').length,
       mobileNavDisplay: getComputedStyle(shadow.querySelector('.mobile-nav')).display,
       horizontalOverflow: shell.scrollWidth > shell.clientWidth + 1,
     };
-  }, viewportName);
-  result.errors = errors;
-  return result;
+  }, viewport).then(result => ({ ...result, errors, journey: {} }));
+}
+
+async function view(page, id) {
+  await app(page).locator(`[data-action="view"][data-view="${id}"]`).first().click();
+  await app(page).locator(`.${id === 'chat' ? 'chat' : id}-view`).waitFor({ state: 'visible' });
+}
+
+async function desktopJourney(page, result) {
+  const root = app(page);
+  await root.locator('[data-action="conversation-new"]').click();
+  result.journey.branchCreated = await root.locator('[data-action="conversation-select"]').count() >= 2;
+  await root.locator('[data-action="conversation-copy"]').last().click();
+  result.journey.branchCopied = await root.locator('[data-action="conversation-select"]').count() >= 3;
+  await root.locator('[data-action="conversation-rename"]').last().click();
+  result.journey.branchRenamed = (await root.locator('[data-action="conversation-select"]').last().innerText()).trim().length > 0;
+  await root.locator('[data-action="conversation-delete"]').last().click();
+  result.journey.branchDeleted = await root.locator('[data-action="conversation-select"]').count() >= 2;
+  await root.locator('[data-action="right-tab"][data-tab="preferences"]').click();
+  await root.locator('[data-field="preference-key"]').fill('叙事节奏');
+  await root.locator('[data-field="preference-value"]').fill('铺垫—冲突—回报，避免连续灌设定。');
+  await root.locator('[data-action="preference-save"]').click();
+  result.journey.preferenceSaved = await root.locator('.preference-row').count() === 1;
+  await root.locator('[data-action="preference-confirm"]').click();
+  result.journey.preferenceConfirmed = (await root.locator('.preference-row').innerText()).includes('已确认');
+
+  for (const moduleId of ['main', 'outline', 'act', 'chapter', 'character', 'progression_preset', 'format_guard']) {
+    await root.locator(`[data-action="module-select"][data-module="${moduleId}"]`).click();
+    result.journey[`module_${moduleId}`] = (await root.locator(`[data-action="module-select"][data-module="${moduleId}"]`).getAttribute('class')).includes('active');
+  }
+  await root.locator('[data-action="module-select"][data-module="outline"]').click();
+
+  await view(page, 'settings');
+  result.journey.settingsVisible = await root.locator('.settings-card').count() === 3;
+  await root.locator('[data-action="api-new"]').click();
+  await root.locator('[data-model-field="name"]').fill('视觉测试 API');
+  await root.locator('[data-model-field="endpoint"]').fill('https://example.invalid/v1');
+  await root.locator('[data-model-field="model"]').fill('mock-model');
+  await root.locator('[data-model-field="apiKey"]').fill('sk-visual-secret');
+  await root.locator('[data-action="api-save"]').click();
+  result.journey.apiSaved = await root.locator('[data-action="api-select"] option', { hasText: '视觉测试 API' }).count() === 1;
+  await root.locator('[data-action="system-new"]').click();
+  await root.locator('[data-system-field="name"]').fill('视觉测试 System');
+  await root.locator('[data-system-field="content"]').fill('保持因果一致，输出可确认结果。');
+  await root.locator('[data-action="system-save"]').click();
+  result.journey.systemSaved = await root.locator('[data-action="system-select"] option', { hasText: '视觉测试 System' }).count() === 1;
+  await root.locator('[data-action="settings-module"]').selectOption('outline');
+  await root.locator('[data-binding-field="apiPresetId"]').selectOption({ label: '视觉测试 API' });
+  await root.locator('[data-binding-field="systemPresetId"]').selectOption({ label: '视觉测试 System' });
+  await root.locator('[data-action="binding-save"]').click();
+  result.journey.bindingSaved = (await root.locator('.resolution-box').innerText()).includes('mock-model');
+  await root.locator('[data-action="settings-module"]').selectOption('outline');
+  await root.locator('[data-binding-field="apiPresetId"]').selectOption('tavern-current');
+  await root.locator('[data-binding-field="model"]').fill('');
+  await root.locator('[data-action="binding-save"]').click();
+  result.bindingReset = await root.locator('.resolution-box').innerText();
+  await root.locator('[data-action="api-select"]').selectOption('tavern-current');
+  await root.locator('[data-action="api-save"]').click();
+
+  await view(page, 'worldbook');
+  await root.locator('[data-action="book-select"]').first().click();
+  await root.locator('[data-action="entry-select"]').first().click();
+  await root.locator('[data-action="context-toggle"]').first().click();
+  await root.locator('[data-field="wb-content"]').fill('视觉测试修改：主角从港务记录发现领航员当晚并未值班。');
+  await root.locator('[data-action="worldbook-preview"]').click();
+  result.journey.worldbookDiff = await root.locator('.modal[aria-label="世界书 Diff"]').isVisible();
+  await root.locator('[data-action="worldbook-apply"]').click();
+  result.journey.worldbookApplied = (await root.locator('[data-field="wb-content"]').inputValue()).includes('视觉测试修改');
+  await root.locator('[data-action="worldbook-undo"]').click();
+  result.journey.worldbookUndo = !(await root.locator('[data-field="wb-content"]').inputValue()).includes('视觉测试修改');
+
+  await view(page, 'chat');
+  await root.locator('[data-action="module-select"][data-module="outline"]').click();
+  await root.locator('[data-action="generate-formal"]').click();
+  await page.waitForFunction(() => {
+    const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
+    return Boolean(shadow?.querySelector('.proposal-card,.message-error'));
+  });
+  if (!(await root.locator('.proposal-card').isVisible())) {
+    throw new Error(`formal proposal failed: ${await root.locator('.message-assistant').last().innerText()}`);
+  }
+  result.journey.proposalCreated = true;
+  await root.locator('[data-action="proposal-confirm-all"]').click();
+  await root.locator('[data-action="right-tab"][data-tab="progress"]').click();
+  result.journey.artifactConfirmed = await root.locator('[data-action="open-artifact"][data-kind="outline"]').evaluate(node => node.classList.contains('complete'));
+  const projectDownloadPromise = page.waitForEvent('download');
+  await root.locator('[data-action="project-export"]').first().click();
+  const projectDownload = await projectDownloadPromise;
+  const projectDownloadPath = await projectDownload.path();
+  result.journey.projectExport = Boolean(projectDownloadPath) && (await projectDownload.suggestedFilename()).endsWith('.json');
+
+  await root.locator('[data-field="composer"]').fill('讨论蓝焰线索怎样更有因果张力？');
+  await root.locator('[data-action="planning-send"]').click();
+  await page.waitForFunction(() => {
+    const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
+    const messages = [...(shadow?.querySelectorAll('.message-assistant') || [])];
+    return messages.length >= 2 && !messages.at(-1).querySelector('.status-streaming');
+  });
+  const assistantCount = await root.locator('.message-assistant').count();
+  await root.locator('[data-action="message-reroll"]').last().click();
+  await page.waitForFunction(expected => {
+    const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
+    const messages = [...(shadow?.querySelectorAll('.message-assistant') || [])];
+    return messages.length >= expected && !messages.at(-1).querySelector('.status-streaming');
+  }, assistantCount);
+  const assistantCountAfter = await root.locator('.message-assistant').count();
+  const rerolledText = await root.locator('.message-assistant').last().innerText();
+  result.rerolledText = rerolledText;
+  result.rerollCounts = { before: assistantCount, after: assistantCountAfter };
+  result.journey.rerollWorked = assistantCountAfter >= assistantCount && !rerolledText.includes('生成失败');
+  await root.locator('[data-action="message-copy"]').last().click();
+  await page.waitForFunction(() => document.querySelector('#riki-story-workbench-root')?.shadowRoot?.querySelector('.notice')?.textContent?.includes('复制'));
+  result.journey.messageCopy = (await root.locator('.notice').innerText()).includes('复制');
+  const userMessage = root.locator('.message-user').last();
+  await userMessage.locator('[data-action="message-edit"]').click();
+  await root.locator('[data-field="message-edit-draft"]').fill('编辑后：蓝焰线索如何形成因果闭环？');
+  await root.locator('[data-action="message-edit-save"]').click();
+  result.journey.messageEdited = (await root.locator('.message-user').last().innerText()).includes('编辑后');
+  await root.locator('[data-action="module-select"][data-module="format_guard"]').click();
+  await root.locator('[data-action="generate-formal"]').click();
+  await root.locator('.proposal-card').waitFor({ state: 'visible' });
+  result.journey.formatCompiler = (await root.locator('.proposal-card').innerText()).includes('候选');
+  await root.locator('[data-action="proposal-reject"]').click();
+
+  await view(page, 'artifacts');
+  result.journey.artifactView = await root.locator('.artifact-detail pre').first().isVisible();
+  await root.locator('[data-action="artifact-copy"]').click();
+  await root.locator('[data-action="artifact-edit"]').click();
+  const json = await root.locator('[data-field="artifact-edit-json"]').inputValue();
+  await root.locator('[data-field="artifact-edit-json"]').fill(json.replace('雾港蓝焰', '雾港蓝焰·修订'));
+  await root.locator('[data-action="artifact-edit-save"]').click();
+  result.journey.artifactRevisionProposal = await root.locator('.proposal-card').isVisible();
+  await root.locator('[data-action="proposal-reject"]').click();
+
+  await view(page, 'artifacts');
+  await root.locator('[data-action="artifact-delete"]').click();
+  result.journey.artifactDeletedToTrash = await root.locator('[data-action="trash-restore"]').isVisible();
+  await root.locator('[data-action="trash-restore"]').click();
+  result.journey.artifactRestored = await root.locator('[data-action="artifact-edit"]').isVisible();
+
+  if (projectDownloadPath) {
+    await view(page, 'chat');
+    const chooserPromise = page.waitForEvent('filechooser');
+    await root.locator('[data-action="project-import"]').first().click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles(projectDownloadPath);
+    await page.waitForFunction(() => document.querySelector('#riki-story-workbench-root')?.shadowRoot?.querySelector('.notice')?.textContent?.includes('项目导入完成'));
+    result.journey.projectImport = true;
+  } else result.journey.projectImport = false;
+
+  await view(page, 'logs');
+  result.logRows = await root.locator('[data-action="log-select"]').allInnerTexts();
+  result.journey.logsVisible = await root.locator('[data-action="log-select"]').count() >= 1;
+  await root.locator('[data-action="log-mode"][data-mode="input"]').click();
+  result.journey.logInputVisible = (await root.locator('.log-detail pre').innerText()).includes('messages');
+  const logDownloadPromise = page.waitForEvent('download');
+  await root.locator('[data-action="logs-export"]').click();
+  const logDownload = await logDownloadPromise;
+  result.journey.logExport = (await logDownload.suggestedFilename()).endsWith('.json');
+  const secretLeak = await page.evaluate(() => [...Array(localStorage.length)].some((_, index) => {
+    const key = localStorage.key(index) || '';
+    return key.includes('riki_story_workbench_project_v11') && (localStorage.getItem(key) || '').includes('sk-visual-secret');
+  }));
+  result.journey.secretExcludedFromProject = !secretLeak;
+  await page.screenshot({ path: path.join(rootPath(), 'dist', 'preview-desktop.png'), fullPage: true });
+}
+
+function rootPath() { return root; }
+
+async function mobileJourney(page, result, screenshot) {
+  const root = app(page);
+  result.journey.mobileNav = await root.locator('.mobile-nav').isVisible();
+  await root.locator('[data-action="mobile-pane"][data-pane="left"]').tap();
+  result.journey.leftPane = await root.locator('.pane-left').isVisible();
+  await root.locator('[data-action="module-select"][data-module="character"]').tap();
+  await root.locator('[data-action="mobile-pane"][data-pane="main"]').tap();
+  result.journey.mainPane = await root.locator('.main-pane').isVisible();
+  await root.locator('[data-action="view"][data-view="worldbook"]').tap();
+  await root.locator('[data-action="book-select"]').first().tap();
+  await root.locator('[data-action="entry-select"]').first().tap();
+  result.journey.worldbookEditor = await root.locator('[data-field="wb-content"]').isVisible();
+  await root.locator('[data-action="mobile-pane"][data-pane="right"]').tap();
+  result.journey.rightPane = await root.locator('.pane-right').isVisible();
+  await root.locator('[data-action="mobile-pane"][data-pane="main"]').tap();
+  await root.locator('[data-action="close"]').tap();
+  await page.waitForFunction(() => document.querySelector('#riki-story-workbench-root')?.hidden === true);
+  Object.assign(result.journey, await root.evaluate(host => ({
+    closedHidden: host.hidden,
+    closedDisplay: getComputedStyle(host).display,
+    closedOverlayVisible: Boolean(host.shadowRoot?.querySelector('.overlay')?.checkVisibility?.()),
+  })));
+  await page.locator('#riki-story-workbench-launcher').tap();
+  await page.waitForFunction(() => document.querySelector('#riki-story-workbench-root')?.hidden === false);
+  result.journey.reopened = await root.evaluate(host => !host.hidden && getComputedStyle(host).display !== 'none');
+  if (screenshot) await page.screenshot({ path: path.join(rootPath(), 'dist', 'preview-mobile.png'), fullPage: true });
+}
+
+function audit(report) {
+  const failures = [];
+  for (const item of report.results) {
+    if (item.title !== 'Riki 剧情工作台') failures.push(`${item.viewport}: title missing`);
+    if (item.horizontalOverflow) failures.push(`${item.viewport}: horizontal overflow`);
+    failures.push(...item.errors.map(error => `${item.viewport}: ${error}`));
+    for (const [name, value] of Object.entries(item.journey)) {
+      if (value === false && !['closedOverlayVisible'].includes(name)) failures.push(`${item.viewport}: ${name} failed`);
+    }
+  }
+  const desktop = report.results.find(item => item.viewport.startsWith('desktop'));
+  if (desktop.mobileNavDisplay !== 'none') failures.push('desktop: mobile nav visible');
+  for (const mobile of report.results.filter(item => item.viewport.startsWith('mobile'))) {
+    if (mobile.mobileNavDisplay === 'none') failures.push(`${mobile.viewport}: mobile nav hidden`);
+    if (mobile.journey.closedDisplay !== 'none') failures.push(`${mobile.viewport}: closed display ${mobile.journey.closedDisplay}`);
+    if (mobile.journey.closedOverlayVisible) failures.push(`${mobile.viewport}: overlay visible after close`);
+  }
+  return failures;
 }
 
 (async () => {
-  const browser = await chromium.launch({
-    headless: true,
-    ...(process.env.RIKI_BROWSER_EXECUTABLE ? { executablePath: process.env.RIKI_BROWSER_EXECUTABLE } : {}),
-  });
+  const browser = await chromium.launch({ headless: true, ...(process.env.RIKI_BROWSER_EXECUTABLE ? { executablePath: process.env.RIKI_BROWSER_EXECUTABLE } : {}) });
   try {
+    const results = [];
     const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-    const desktopResult = await inspect(desktop, 'desktop-1440x900');
-    const desktopRoot = desktop.locator('#riki-story-workbench-root');
-    await desktopRoot.locator('[data-field="content"]').fill('主角刚抵达雾港，并从港务记录发现领航员当晚并未值班。');
-    await desktopRoot.locator('[data-action="preview-patch"]').click();
-    await desktopRoot.locator('.diff').waitFor({ state: 'visible' });
-    desktopResult.diffPreviewOpened = await desktopRoot.locator('.diff').isVisible();
-    await desktopRoot.locator('[data-action="close-diff"]').click();
-    await desktopRoot.locator('[data-action="toggle-context"]').first().click();
-    await desktopRoot.locator('[data-action="tab"][data-tab="discussion"]').click();
-    await desktopRoot.locator('[data-input="discussion"]').fill('如何让这条失踪线索更有因果张力？');
-    await desktopRoot.locator('[data-action="send-discussion"]').click();
-    await desktopRoot.locator('.message.assistant').waitFor({ state: 'visible' });
-    desktopResult.discussionMessages = await desktopRoot.locator('.message').count();
-    await desktop.screenshot({ path: path.join(root, 'dist', 'preview-desktop.png'), fullPage: true });
-
-    const mobile = await browser.newPage({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
-    const mobileResult = await inspect(mobile, 'mobile-375x812');
-    const mobileRoot = mobile.locator('#riki-story-workbench-root');
-    await mobileRoot.locator('[data-action="mobile-view"][data-view="entries"]').click();
-    await mobileRoot.locator('[data-action="select-entry"]').first().click();
-    await mobileRoot.locator('[data-action="mobile-view"][data-view="workspace"]').click();
-    mobileResult.editorVisibleAfterNavigation = await mobileRoot.locator('[data-field="content"]').isVisible();
-    await mobile.screenshot({ path: path.join(root, 'dist', 'preview-mobile.png'), fullPage: true });
-
-    const mobile320 = await browser.newPage({ viewport: { width: 320, height: 700 }, isMobile: true, hasTouch: true });
-    const mobile320Result = await inspect(mobile320, 'mobile-320x700');
-    await mobile320.close();
-
-    const mobile430 = await browser.newPage({ viewport: { width: 430, height: 900 }, isMobile: true, hasTouch: true });
-    const mobile430Result = await inspect(mobile430, 'mobile-430x900');
-    await mobile430.close();
-
-    const report = { schemaVersion: 1, checkedAt: new Date().toISOString(), results: [desktopResult, mobile320Result, mobileResult, mobile430Result] };
+    const desktopResult = await openPreview(desktop, 'desktop-1440x900');
+    await desktopJourney(desktop, desktopResult);
+    results.push(desktopResult);
+    await desktop.close();
+    for (const viewport of [{ width: 320, height: 700 }, { width: 375, height: 812 }, { width: 430, height: 900 }]) {
+      const page = await browser.newPage({ viewport, isMobile: true, hasTouch: true });
+      const result = await openPreview(page, `mobile-${viewport.width}x${viewport.height}`);
+      await mobileJourney(page, result, viewport.width === 375);
+      results.push(result);
+      await page.close();
+    }
+    const report = { schemaVersion: 2, checkedAt: new Date().toISOString(), results };
     fs.writeFileSync(path.join(root, 'dist', 'visual-check.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-
-    const failures = report.results.flatMap(item => [
-      ...item.errors.map(error => `${item.viewport}: ${error}`),
-      ...(item.title === 'Riki 剧情工作台' ? [] : [`${item.viewport}: title missing`]),
-      ...(item.bookButtons >= 3 ? [] : [`${item.viewport}: book list incomplete`]),
-      ...(item.entryButtons >= 1 ? [] : [`${item.viewport}: entry list incomplete`]),
-      ...(item.horizontalOverflow ? [`${item.viewport}: horizontal overflow`] : []),
-    ]);
-    if (desktopResult.mobileNavDisplay !== 'none') failures.push('desktop: mobile nav should be hidden');
-    for (const item of [mobile320Result, mobileResult, mobile430Result]) {
-      if (item.mobileNavDisplay === 'none') failures.push(`${item.viewport}: mobile nav should be visible`);
-    }
-    if (!desktopResult.diffPreviewOpened) failures.push('desktop: diff preview did not open');
-    if (desktopResult.discussionMessages < 2) failures.push('desktop: discussion flow did not return a reply');
-    if (!mobileResult.editorVisibleAfterNavigation) failures.push('mobile: entry editor navigation failed');
-    if (failures.length) {
-      failures.forEach(item => console.error(`FAIL ${item}`));
-      process.exitCode = 1;
-    } else {
-      console.log('Visual preview checks passed for desktop and mobile.');
-    }
-  } finally {
-    await browser.close();
-  }
-})().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+    const failures = audit(report);
+    if (failures.length) { failures.forEach(value => console.error(`FAIL ${value}`)); process.exitCode = 1; }
+    else console.log('Visual and interaction checks passed for desktop and 320/375/430 mobile viewports.');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exit(1); });

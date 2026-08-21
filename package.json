@@ -1,19 +1,27 @@
 {
   "name": "riki-story-workbench",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Versioned Tavern Helper story discussion and guarded worldbook workbench.",
+  "description": "Versioned Tavern Helper Riki story-planning workbench without database or secondary-creation engines.",
   "repository": {
     "type": "git",
     "url": "https://github.com/rikidrq/riki-story-workbench.git"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node tests/run-tests.mjs",
-    "check:syntax": "node --check src/riki-workbench.js && node --check scripts/build.mjs && node --check scripts/preview-server.mjs && node --check scripts/visual-check.cjs",
+    "test:legacy": "node tests/run-tests.mjs",
+    "test:project": "node tests/project-core-tests.mjs",
+    "test:model": "node tests/model-config-tests.mjs",
+    "test:planning": "node tests/planning-tests.mjs",
+    "test:simulation": "node tests/runtime-simulations.mjs",
+    "test:actions": "node tests/action-contract-tests.mjs",
+    "test:release": "node tests/release-audit-tests.mjs",
+    "test": "npm run test:legacy && npm run test:project && npm run test:model && npm run test:planning && npm run test:simulation && npm run test:actions && npm run test:release",
+    "check:syntax": "node --check src/riki-workbench.js && node --check src/riki-project-core.js && node --check src/riki-model-config.js && node --check src/riki-planning.js && node --check src/riki-ui.js && node --check scripts/build.mjs && node --check scripts/preview-server.mjs && node --check scripts/visual-check.cjs",
     "check:visual": "node scripts/visual-check.cjs",
     "verify": "npm run check:syntax && npm run build && npm test",
+    "verify:full": "npm run verify && npm run check:visual",
     "preview": "node scripts/preview-server.mjs"
   }
 }

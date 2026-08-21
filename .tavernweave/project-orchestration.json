@@ -49,6 +49,18 @@
       "status": "resolved",
       "resultEvidence": "visual-check 支持 RIKI_BROWSER_EXECUTABLE，并使用机器现有 Chrome 完成桌面与移动端检查。",
       "returnTo": "BP-01/P5"
+    },
+    {
+      "id": "RF-002",
+      "kind": "temporary-problem-refinement",
+      "parentStep": "BP-01/P3",
+      "problem": "320px 触摸环境点击工作台关闭按钮后，宿主 hidden 状态已设置但 fixed 遮罩仍然可见。",
+      "triggerEvidence": "Playwright 触摸回放显示 tap 后 root.hidden=true、root 宽高归零，但 getComputedStyle(root).display 仍为 inline，overlay 仍为 grid。",
+      "persistent": false,
+      "expandsProductScope": false,
+      "status": "resolved",
+      "resultEvidence": "320/375/430px Playwright 真触摸关闭均确认 root.hidden=true、computed display=none、overlay 不可见，并可从 R 入口重开。",
+      "returnTo": "BP-01/P3"
     }
   ],
   "discussionDirections": [
@@ -57,7 +69,7 @@
       "topic": "承载面、版本加载与状态权威",
       "level": "foundational",
       "roundLimit": 4,
-      "roundsUsed": 2,
+      "roundsUsed": 3,
       "status": "frozen",
       "decisionIds": ["D-001", "D-002", "D-003"]
     }

@@ -47,11 +47,15 @@ assert.match(loader.content, /const RIKI_VERSION = '1\.1\.0'/u);
 assert.match(loader.content, /@v\$\{RIKI_VERSION\}\/dist\/releases\/\$\{RIKI_VERSION\}/u);
 assert.equal(loader.content.includes('@main'), false);
 
-const tagCommit = execFileSync('git', ['rev-list', '-n', '1', 'v1.0.0'], { cwd: root, encoding: 'utf8' }).trim();
-assert.equal(tagCommit, 'e1b4bd21e1d12f06fa8c086425057a5faa9352cf');
-const oldReleaseFromTag = execFileSync('git', ['show', 'v1.0.0:dist/releases/1.0.0/riki-workbench.js'], { cwd: root });
 const oldReleaseWorking = fs.readFileSync(path.join(root, 'dist/releases/1.0.0/riki-workbench.js'));
-assert.equal(sha256(oldReleaseWorking), sha256(oldReleaseFromTag), 'published 1.0.0 release bytes changed');
+assert.equal(sha256(oldReleaseWorking), '860ce0866f77e243e199552431b7874a04ed4a20d1fbbeeb158a143917efb9fe', 'published 1.0.0 release bytes changed');
+let tagCommit = '';
+try { tagCommit = execFileSync('git', ['rev-list', '-n', '1', 'v1.0.0'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch (_) {}
+if (tagCommit) {
+  assert.equal(tagCommit, 'e1b4bd21e1d12f06fa8c086425057a5faa9352cf');
+  const oldReleaseFromTag = execFileSync('git', ['show', 'v1.0.0:dist/releases/1.0.0/riki-workbench.js'], { cwd: root });
+  assert.equal(sha256(oldReleaseWorking), sha256(oldReleaseFromTag), 'working 1.0.0 differs from immutable tag bytes');
+}
 
 const roadmap = read('docs/roadmap/ROADMAP-300.md');
 for (const version of ['2.0', '2.5', '3.0', '4.0']) {

@@ -139,7 +139,11 @@ test('删除最后一个分支会自动补一个可用分支', () => {
 test('详细版、粗略版、懒人版状态和旧别名归一正确', () => {
   const state = makeState();
   const conversation = active(state);
-  core.rikiProjectSetStrategyMode(state, conversation.id, 'rough');
+  core.rikiProjectSetStrategyMode(state, conversation.id, 'detailed');
+  assert.equal(core.rikiProjectStrategyNextAction(conversation, 'outline'), 'discuss');
+  core.rikiProjectSetStrategyProgress(state, conversation.id, 'outline', 'asked');
+  assert.equal(core.rikiProjectStrategyNextAction(conversation, 'outline'), 'generate');
+  core.rikiProjectSetStrategyMode(state, conversation.id, 'rough', { force: true });
   assert.equal(conversation.strategyMode, 'brief');
   assert.equal(core.rikiProjectStrategyNextAction(conversation, 'outline'), 'ask_once');
   core.rikiProjectSetStrategyProgress(state, conversation.id, 'outline', 'asked');
@@ -148,6 +152,15 @@ test('详细版、粗略版、懒人版状态和旧别名归一正确', () => {
   assert.throws(() => core.rikiProjectSetStrategyMode(state, conversation.id, 'lazy'), /不能再修改/);
   const normalized = core.rikiProjectNormalizeState({ ...state, conversations: [{ ...conversation, strategyMode: 'normal' }] }, { chatKey: 'chat-a' });
   assert.equal(active(normalized).strategyMode, 'detailed');
+});
+
+test('懒人版必须先讨论再由确认按钮进入自动生成', () => {
+  const state = makeState();
+  const conversation = active(state);
+  core.rikiProjectSetStrategyMode(state, conversation.id, 'lazy');
+  assert.equal(core.rikiProjectStrategyNextAction(conversation, 'outline'), 'discuss');
+  core.rikiProjectSetStrategyProgress(state, conversation.id, 'outline', 'asked');
+  assert.equal(core.rikiProjectStrategyNextAction(conversation, 'outline'), 'auto_generate');
 });
 
 test('偏好推测、确认、重命名、批量确认和清空完整工作', () => {

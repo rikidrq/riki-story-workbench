@@ -51,7 +51,12 @@ await test('simulation round 1: detailed workflow discusses, confirms outline an
   Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
   const outlineDraft = await app.sendPlanning('请生成正式总纲候选', { moduleId: 'outline', formal: true });
   assert.equal(outlineDraft.status, 'awaiting_content_confirmation');
-  await app.compileLatestDraft(outlineDraft.id);
+  assert.equal(Boolean(outlineDraft.request.contentLogId), true);
+  assert.equal(Project.rikiProjectRequestLogById(app.state.project, outlineDraft.request.contentLogId).status, 'complete');
+  assert.match(outlineDraft.content, /完整总纲/);
+  const outlineCompiled = await app.compileLatestDraft(outlineDraft.id);
+  assert.equal(Boolean(outlineCompiled.request.compilerLogId), true);
+  assert.equal(Project.rikiProjectRequestLogById(app.state.project, outlineCompiled.request.compilerLogId).status, 'complete');
   assert.equal(branch.pendingProposal.kind, 'outline');
   const outline = await app.confirmCurrentProposal();
   assert.equal(outline.kind, 'outline');
@@ -63,6 +68,17 @@ await test('simulation round 1: detailed workflow discusses, confirms outline an
   assert.equal(Project.rikiProjectCurrentArtifact(app.state.project, 'outline').content.title, '编译后的雾港蓝焰');
   assert.equal(Project.rikiProjectCurrentArtifact(app.state.project, 'acts').content.acts[0].actId, 'ACT-001');
   assert.equal(app.state.project.requestLogs.length >= 2, true);
+});
+
+await test('typed generation wording cannot bypass the discussion confirmation gate', async () => {
+  const app = runtime('discussion-gate');
+  const branch = Project.rikiProjectActiveConversation(app.state.project);
+  Project.rikiProjectSetStrategyMode(app.state.project, branch.id, 'detailed', { force: true });
+  const reply = await app.sendPlanning('请现在直接生成正式总纲', { moduleId: 'outline' });
+  assert.equal(reply.status, 'complete');
+  assert.equal(branch.pendingProposal, null);
+  assert.equal(branch.strategyProgress.outline.status, 'asked');
+  assert.equal(Project.rikiProjectStrategyNextAction(branch, 'outline'), 'generate');
 });
 
 await test('simulation round 2: brief workflow confirms rough characters before detailed version', async () => {

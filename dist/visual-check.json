@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "checkedAt": "2026-08-21T18:20:45.006Z",
+  "checkedAt": "2026-08-21T20:34:16.077Z",
   "results": [
     {
       "viewport": "desktop-1440x900",
@@ -36,12 +36,19 @@
         "apiSaved": true,
         "systemSaved": true,
         "bindingSaved": true,
+        "configScrollPreserved": true,
+        "lazyBlockedBeforeDiscussion": true,
+        "lazyConfirmationButton": true,
         "worldbookModelSuggestion": true,
         "worldbookSuggestionLoaded": true,
         "worldbookDiff": true,
         "worldbookApplied": true,
         "worldbookUndo": true,
+        "discussionConfirmationGate": true,
+        "replyDiagnosticsVisible": true,
+        "replyInputVisible": true,
         "contentConfirmationGate": true,
+        "fullOutlineVisible": true,
         "proposalCreated": true,
         "artifactConfirmed": true,
         "projectExportPreview": true,
@@ -61,20 +68,22 @@
         "logExport": true,
         "secretExcludedFromProject": true
       },
-      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"api-2-e03a7f61-83b9-4f06-bbcd-80db005ddb2a\",\n  \"apiPresetName\": \"视觉测试 API\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"https://mock.invalid/v1\",\n  \"profile\": {\n    \"id\": \"mock-profile\",\n    \"name\": \"模拟酒馆连接预设\",\n    \"api\": \"openai\",\n    \"mode\": \"\",\n    \"model\": \"mock-model\",\n    \"models\": [\n      \"mock-model\"\n    ],\n    \"tavernPreset\": \"模拟写作预设\",\n    \"endpoint\": \"https://mock.invalid/v1\",\n    \"credential\": \"酒馆密钥库引用（已隐藏）\"\n  },\n  \"credential\": \"酒馆密钥库引用（已隐藏）\",\n  \"systemPresetId\": \"system-7-d7dd4dde-4c1a-4d5d-a1b2-03a48898f6ac\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
-      "rerolledText": "R\n大章 Agent\n大章 Agent\n18:20\n\n已完成大章候选，请检查后确认。\n\n请求详情\n重 Roll\n删除\n复制",
+      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"api-2-88971d23-32b2-4734-9c19-a225af6ddda4\",\n  \"apiPresetName\": \"视觉测试 API\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"https://mock.invalid/v1\",\n  \"profile\": {\n    \"id\": \"mock-profile\",\n    \"name\": \"模拟酒馆连接预设\",\n    \"api\": \"openai\",\n    \"mode\": \"\",\n    \"model\": \"mock-model\",\n    \"models\": [\n      \"mock-model\"\n    ],\n    \"tavernPreset\": \"模拟写作预设\",\n    \"endpoint\": \"https://mock.invalid/v1\",\n    \"credential\": \"酒馆密钥库引用（已隐藏）\"\n  },\n  \"credential\": \"酒馆密钥库引用（已隐藏）\",\n  \"systemPresetId\": \"system-7-50047fcb-3081-4f29-a325-b1fc143e39d6\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
+      "rerolledText": "R\n大章 Agent\n大章 Agent\n20:34\n当前方向还需要你确认\n\n我先不生成正式成果，继续把会改变后续设计的分歧说清楚：\n\n你更希望主线由调查真相还是保护雾港驱动？\n失踪领航员更适合作为主动隐瞒者，还是被迫离开的关键证人？\n结局更偏向公开真相、维持秩序，还是保留两条由玩家选择的 IF 路线？\n\n你可以继续回答，也可以在方向稳定后点击确认按钮进入详细设计。\n\n请求详情 · complete\n内容生成 ·\n完成\n输入\n输出诊断\nAI 原文\n合并收发\n{\n  \"status\": \"complete\",\n  \"module\": \"act\",\n  \"pass\": \"primary\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"startedAt\": \"2026-08-21T20:34:07.816Z\",\n  \"endedAt\": \"2026-08-21T20:34:07.832Z\",\n  \"streamed\": true,\n  \"fallback\": false,\n  \"notice\": \"\",\n  \"inputTokens\": null,\n  \"visibleOutput\": \"## 当前方向还需要你确认\\n\\n我先不生成正式成果，继续把会改变后续设计的分歧说清楚：\\n\\n- 你更希望主线由**调查真相**还是**保护雾港**驱动？\\n- 失踪领航员更适合作为主动隐瞒者，还是被迫离开的关键证人？\\n- 结局更偏向公开真相、维持秩序，还是保留两条由玩家选择的 IF 路线？\\n\\n你可以继续回答，也可以在方向稳定后点击确认按钮进入详细设计。\",\n  \"error\": null\n}\n重 Roll\n删除\n复制",
       "rerollCounts": {
-        "before": 4,
-        "after": 4
+        "before": 5,
+        "after": 5
       },
       "logRows": [
-        "大章 Agent\n完成\n2026-08-21 18:20:38 · profile · mock-model",
-        "大章 Agent\n完成\n2026-08-21 18:20:38 · profile · mock-model",
-        "大章 Agent\n完成\n2026-08-21 18:20:36 · profile · mock-model",
-        "大章 Agent\n完成\n2026-08-21 18:20:35 · profile · mock-model",
-        "总纲 Agent\n完成\n2026-08-21 18:20:35 · profile · mock-model",
-        "总纲 Agent\n完成\n2026-08-21 18:20:34 · profile · mock-model",
-        "主控 Agent\n完成\n2026-08-21 18:20:34 · profile · mock-model"
+        "大章 Agent\n完成\n2026-08-21 20:34:10 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-21 20:34:10 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-21 20:34:07 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-21 20:34:06 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-21 20:34:06 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-21 20:34:05 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-21 20:34:04 · profile · mock-model",
+        "主控 Agent\n完成\n2026-08-21 20:34:03 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-21 20:34:03 · profile · mock-model"
       ]
     },
     {

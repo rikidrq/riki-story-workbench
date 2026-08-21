@@ -20,9 +20,10 @@ const mustBeClickable = [
   'close', 'refresh', 'view', 'mobile-pane', 'right-tab',
   'conversation-new', 'conversation-select', 'conversation-copy', 'conversation-rename', 'conversation-delete',
   'preference-save', 'preference-edit', 'preference-confirm', 'preference-confirm-all', 'preference-delete', 'preference-clear',
-  'workflow-mode', 'lazy-start', 'module-select', 'planning-send', 'generate-formal', 'generation-stop',
+  'workflow-mode', 'lazy-start', 'discussion-continue', 'module-select', 'planning-send', 'generate-formal', 'generation-stop',
   'message-edit', 'message-edit-save', 'message-delete', 'message-reroll', 'message-copy',
   'content-confirm-compile', 'content-return-controller',
+  'message-log-view',
   'proposal-item', 'proposal-regenerate-rejected', 'proposal-confirm-all', 'proposal-edit', 'proposal-edit-save', 'proposal-reject',
   'artifact-kind', 'artifact-version', 'artifact-copy', 'artifact-edit', 'artifact-edit-save', 'artifact-delete', 'artifact-backfill-slots',
   'trash-toggle', 'trash-restore', 'trash-empty',
@@ -41,5 +42,8 @@ assert.match(ui, /@media \(max-width:820px\)/u);
 assert.match(ui, /@media \(max-width:390px\)/u);
 assert.match(ui, /prefers-reduced-motion/u);
 assert.match(ui, /min-height:44px/u);
+assert.match(ui, /captureScrollPositions\(runtime, state\)/u);
+assert.match(ui, /restoreScrollPositions\(runtime, state\)/u);
+assert.match(ui, /messageLogMode/u);
 
 console.log(`Action contract passed: ${rendered.length} rendered actions, 0 missing handlers.`);

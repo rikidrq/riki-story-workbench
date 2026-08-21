@@ -1,3 +1,4 @@
+/* Riki Story Workbench 1.2.0 | generated from src/riki-project-core.js */
 /**
  * Riki Story Workbench project state machine.
  *

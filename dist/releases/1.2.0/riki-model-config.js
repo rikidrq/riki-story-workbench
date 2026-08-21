@@ -1,3 +1,4 @@
+/* Riki Story Workbench 1.2.0 | generated from src/riki-model-config.js */
 import { rikiModulePresetPrompt } from './riki-planning.js';
 
 /**

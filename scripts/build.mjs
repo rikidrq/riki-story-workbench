@@ -52,7 +52,7 @@ fs.mkdirSync(releaseDirectory, { recursive: true });
 fs.mkdirSync(importableDirectory, { recursive: true });
 
 for (const file of sourceFiles) {
-  if (!fs.existsSync(path.join(root, 'src', file))) throw new Error(`缺少 1.1 运行模块：src/${file}`);
+  if (!fs.existsSync(path.join(root, 'src', file))) throw new Error(`缺少当前运行模块：src/${file}`);
 }
 const source = fs.readFileSync(sourcePath, 'utf8');
 if ((source.match(/__RIKI_VERSION__/g) || []).length !== 1) {

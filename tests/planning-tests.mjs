@@ -5,6 +5,7 @@ import {
   rikiPlanningRoute,
   rikiPlanningStage,
   rikiModeContract,
+  rikiModulePresetPrompt,
   rikiModuleSystemPrompt,
   rikiBuildPlanningMessages,
   rikiParseArtifactEnvelope,
@@ -22,9 +23,10 @@ const emptyArtifacts = () => Object.fromEntries(RIKI_ARTIFACT_KINDS.map(kind => 
 const project = { artifacts: emptyArtifacts() };
 const conversation = { module: 'main', workflowMode: 'detailed', detailLevels: { outline: 'detailed' }, preferences: { tone: '克制' }, messages: [] };
 
-await test('module list contains all non-database planning agents', () => {
-  assert.deepEqual(Object.keys(RIKI_PLANNING_MODULES), ['main', 'outline', 'act', 'chapter', 'character', 'progression_preset', 'format_guard']);
+await test('module list contains all first-version planning agents', () => {
+  assert.deepEqual(Object.keys(RIKI_PLANNING_MODULES), ['main', 'outline', 'act', 'chapter', 'character', 'format_guard']);
   assert.equal(JSON.stringify(RIKI_PLANNING_MODULES).includes('database'), false);
+  assert.equal(JSON.stringify(RIKI_PLANNING_MODULES).includes('progression_preset'), false);
 });
 
 await test('router selects explicit and keyword modules without database fallback', () => {
@@ -52,8 +54,13 @@ await test('three workflow contracts remain distinct', () => {
 await test('system prompts prohibit removed engines and expose artifact contract', () => {
   const prompt = rikiModuleSystemPrompt('outline', { mode: 'detailed', detailLevels: {} });
   assert.match(prompt, /<riki_artifact>/);
-  assert.match(prompt, /不要进入数据库/);
+  assert.match(prompt, /不进入数据库、推进预设/);
+  assert.match(prompt, /故事发动机/);
   assert.doesNotMatch(prompt, /database_design|database_review|灵感二创 Agent/u);
+  assert.match(rikiModuleSystemPrompt('act'), /actGoals/);
+  assert.match(rikiModuleSystemPrompt('chapter'), /requiredGoals/);
+  assert.match(rikiModuleSystemPrompt('character'), /privacyProfile/);
+  assert.match(rikiModuleSystemPrompt('format_guard'), /source_draft 是不可变事实源/);
 });
 
 await test('planning messages contain selected context, preferences and one user turn', () => {
@@ -62,6 +69,15 @@ await test('planning messages contain selected context, preferences and one user
   assert.match(messages[1].content, /雾港/);
   assert.match(messages[1].content, /克制/);
   assert.deepEqual(messages.at(-1), { role: 'user', content: '生成总纲' });
+});
+
+await test('default builtin preset is not duplicated while a custom preset remains an additive system layer', () => {
+  const builtin = rikiModulePresetPrompt('outline');
+  const builtinMessages = rikiBuildPlanningMessages({ project, conversation, moduleId: 'outline', userText: '讨论', systemContent: builtin });
+  assert.equal(builtinMessages.filter(message => message.role === 'system' && message.content.includes('当前模块：总纲 Agent')).length, 1);
+  const customMessages = rikiBuildPlanningMessages({ project, conversation, moduleId: 'outline', userText: '讨论', systemContent: '自定义：保持冷峻悬疑。' });
+  assert.equal(customMessages[0].content, '自定义：保持冷峻悬疑。');
+  assert.match(customMessages[1].content, /不可变协议/);
 });
 
 await test('artifact parser separates visible text and validates expected kind', () => {

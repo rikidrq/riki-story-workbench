@@ -1,35 +1,25 @@
 {
   "schemaVersion": 2,
-  "checkedAt": "2026-08-21T13:37:56.776Z",
+  "checkedAt": "2026-08-21T15:29:10.593Z",
   "results": [
     {
       "viewport": "desktop-1440x900",
-      "title": "Riki 剧情工作台",
+      "title": "Riki剧情助手",
       "shell": {
-        "width": 1426,
-        "height": 882
+        "width": 1440,
+        "height": 900
       },
       "topViews": [
-        "chat",
-        "artifacts",
-        "worldbook",
-        "settings",
-        "logs"
+        "artifacts"
       ],
-      "modules": [
-        "main",
-        "outline",
-        "act",
-        "chapter",
-        "character",
-        "progression_preset",
-        "format_guard"
-      ],
+      "modules": [],
       "branches": 1,
-      "mobileNavDisplay": "none",
+      "mobileMenuDisplay": "none",
+      "mobileSettingsDisplay": "none",
       "horizontalOverflow": false,
       "errors": [],
       "journey": {
+        "strategySelected": true,
         "branchCreated": true,
         "branchCopied": true,
         "branchRenamed": true,
@@ -41,7 +31,6 @@
         "module_act": true,
         "module_chapter": true,
         "module_character": true,
-        "module_progression_preset": true,
         "module_format_guard": true,
         "settingsVisible": true,
         "apiSaved": true,
@@ -67,49 +56,38 @@
         "logExport": true,
         "secretExcludedFromProject": true
       },
-      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"tavern-current\",\n  \"apiPresetName\": \"酒馆当前连接\",\n  \"transport\": \"tavern\",\n  \"model\": \"\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"\",\n  \"profile\": null,\n  \"credential\": \"由酒馆当前连接管理\",\n  \"systemPresetId\": \"system-8-d59bc157-aa99-46f0-835c-9ccf6f00f470\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
-      "rerolledText": "大章 Agent\n完成\n2026-08-21 13:37\n已完成大章候选，请检查后确认。\n重 Roll\n复制\n删除",
+      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"tavern-current\",\n  \"apiPresetName\": \"酒馆当前连接\",\n  \"transport\": \"tavern\",\n  \"model\": \"\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"\",\n  \"profile\": null,\n  \"credential\": \"由酒馆当前连接管理\",\n  \"systemPresetId\": \"system-7-2f6394b8-ad3e-49d2-b3b0-98d3b04e72c9\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
+      "rerolledText": "大章 Agent\n完成\n2026-08-21 15:29\n已完成大章候选，请检查后确认。\n重 Roll\n复制\n删除",
       "rerollCounts": {
         "before": 2,
         "after": 2
       },
       "logRows": [
-        "大章 Agent\n完成\n2026-08-21 13:37:51 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 13:37:50 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 13:37:50 · tavern ·",
-        "大章 Agent\n完成\n2026-08-21 13:37:50 · tavern ·",
-        "总纲 Agent\n完成\n2026-08-21 13:37:49 · tavern ·"
+        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
+        "大章 Agent\n完成\n2026-08-21 15:29:04 · tavern ·",
+        "总纲 Agent\n完成\n2026-08-21 15:29:03 · tavern ·"
       ]
     },
     {
       "viewport": "mobile-320x700",
-      "title": "Riki 剧情工作台",
+      "title": "Riki剧情助手",
       "shell": {
         "width": 320,
         "height": 700
       },
       "topViews": [
-        "chat",
-        "artifacts",
-        "worldbook",
-        "settings",
-        "logs"
+        "artifacts"
       ],
-      "modules": [
-        "main",
-        "outline",
-        "act",
-        "chapter",
-        "character",
-        "progression_preset",
-        "format_guard"
-      ],
+      "modules": [],
       "branches": 1,
-      "mobileNavDisplay": "grid",
+      "mobileMenuDisplay": "grid",
+      "mobileSettingsDisplay": "grid",
       "horizontalOverflow": false,
       "errors": [],
       "journey": {
-        "mobileNav": true,
+        "mobileHeaderControls": true,
         "leftPane": true,
         "mainPane": true,
         "worldbookEditor": true,
@@ -122,33 +100,22 @@
     },
     {
       "viewport": "mobile-375x812",
-      "title": "Riki 剧情工作台",
+      "title": "Riki剧情助手",
       "shell": {
         "width": 375,
         "height": 812
       },
       "topViews": [
-        "chat",
-        "artifacts",
-        "worldbook",
-        "settings",
-        "logs"
+        "artifacts"
       ],
-      "modules": [
-        "main",
-        "outline",
-        "act",
-        "chapter",
-        "character",
-        "progression_preset",
-        "format_guard"
-      ],
+      "modules": [],
       "branches": 1,
-      "mobileNavDisplay": "grid",
+      "mobileMenuDisplay": "grid",
+      "mobileSettingsDisplay": "grid",
       "horizontalOverflow": false,
       "errors": [],
       "journey": {
-        "mobileNav": true,
+        "mobileHeaderControls": true,
         "leftPane": true,
         "mainPane": true,
         "worldbookEditor": true,
@@ -161,33 +128,22 @@
     },
     {
       "viewport": "mobile-430x900",
-      "title": "Riki 剧情工作台",
+      "title": "Riki剧情助手",
       "shell": {
         "width": 430,
         "height": 900
       },
       "topViews": [
-        "chat",
-        "artifacts",
-        "worldbook",
-        "settings",
-        "logs"
+        "artifacts"
       ],
-      "modules": [
-        "main",
-        "outline",
-        "act",
-        "chapter",
-        "character",
-        "progression_preset",
-        "format_guard"
-      ],
+      "modules": [],
       "branches": 1,
-      "mobileNavDisplay": "grid",
+      "mobileMenuDisplay": "grid",
+      "mobileSettingsDisplay": "grid",
       "horizontalOverflow": false,
       "errors": [],
       "journey": {
-        "mobileNav": true,
+        "mobileHeaderControls": true,
         "leftPane": true,
         "mainPane": true,
         "worldbookEditor": true,

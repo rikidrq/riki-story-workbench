@@ -1,3 +1,4 @@
+/* Riki Story Workbench 1.2.0 | generated from src/riki-ui.js */
 import { RIKI_PLANNING_MODULES, RIKI_ARTIFACT_KINDS, rikiPlanningStage } from './riki-planning.js';
 
 function text(value) {

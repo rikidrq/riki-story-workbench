@@ -1,0 +1,19 @@
+{
+  "name": "riki-story-workbench",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Versioned Tavern Helper story discussion and guarded worldbook workbench.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rikidrq/riki-story-workbench.git"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node tests/run-tests.mjs",
+    "check:syntax": "node --check src/riki-workbench.js && node --check scripts/build.mjs && node --check scripts/preview-server.mjs && node --check scripts/visual-check.cjs",
+    "check:visual": "node scripts/visual-check.cjs",
+    "verify": "npm run check:syntax && npm run build && npm test",
+    "preview": "node scripts/preview-server.mjs"
+  }
+}

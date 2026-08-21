@@ -1,0 +1,22 @@
+{
+  "type": "script",
+  "enabled": true,
+  "name": "Riki剧情工作台",
+  "id": "d1e7f665-988c-4c72-8ff1-ccbc51aba5d3",
+  "content": "// Riki 剧情工作台版本加载器\n// 发布地址已经固定，日常更新只改下一行。\nconst RIKI_VERSION = '1.0.0';\nconst RIKI_RELEASE_BASE = 'http://127.0.0.1:8178/releases';\n\n(async function loadRikiStoryWorkbench() {\n  const hostWindow = (() => {\n    try { return window.parent && window.parent !== window ? window.parent : window; } catch (_) { return window; }\n  })();\n  const statusKey = '__RIKI_STORY_WORKBENCH_LOADER_STATUS__';\n  const url = RIKI_RELEASE_BASE.startsWith('http://127.0.0.1')\n    ? `${RIKI_RELEASE_BASE}/${RIKI_VERSION}/riki-workbench.js`\n    : `${RIKI_RELEASE_BASE}@v${RIKI_VERSION}/dist/releases/${RIKI_VERSION}/riki-workbench.js`;\n  hostWindow[statusKey] = { status: 'loading', version: RIKI_VERSION, url, startedAt: new Date().toISOString() };\n  try {\n    const module = await import(url);\n    if (typeof module.start !== 'function') throw new Error('远程 bundle 未导出 start()');\n    const api = await module.start({ startWindow: window, hostWindow });\n    if (api?.version !== RIKI_VERSION) throw new Error(`版本校验失败：请求 ${RIKI_VERSION}，实际 ${api?.version || \"unknown\"}`);\n    hostWindow[statusKey] = { status: 'ready', version: RIKI_VERSION, url, readyAt: new Date().toISOString() };\n  } catch (error) {\n    const message = `Riki 剧情工作台 ${RIKI_VERSION} 加载失败：${error?.message || error}`;\n    hostWindow[statusKey] = { status: 'failed', version: RIKI_VERSION, url, error: String(error?.message || error), failedAt: new Date().toISOString() };\n    try {\n      const toast = hostWindow.toastr || window.toastr;\n      if (typeof toast?.error === 'function') toast.error(message, 'Riki 剧情工作台');\n      else console.error(message);\n    } catch (_) { console.error(message); }\n  }\n})();\n",
+  "info": "Riki 剧情工作台本地开发加载器。先运行 npm run preview，再导入本文件。以后更新只改 RIKI_VERSION。当前构建 1.0.0。",
+  "button": {
+    "enabled": true,
+    "buttons": [
+      {
+        "name": "打开 Riki 剧情工作台",
+        "visible": true
+      }
+    ]
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

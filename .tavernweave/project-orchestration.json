@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "authoritySchema": "tavernweave/project-orchestration/v1",
+  "projectId": "riki-story-workbench",
+  "title": "Riki 剧情工作台",
+  "profile": "blueprint-set",
+  "state": "automated-evidence",
+  "authorityFile": "docs/TOTAL_DESIGN.md",
+  "nextFile": "NEXT.md",
+  "blueprintPolicy": {
+    "masterFile": "docs/BLUEPRINT_INDEX.md",
+    "maxDepth": 2,
+    "maxChildren": 5,
+    "runtimePersistentBlueprintBudget": 0,
+    "blueprints": [
+      {
+        "id": "BP-ROOT",
+        "path": "docs/BLUEPRINT_INDEX.md",
+        "parentId": null,
+        "depth": 1,
+        "status": "active"
+      },
+      {
+        "id": "BP-01",
+        "path": "docs/blueprints/BP-01-first-usable.md",
+        "parentId": "BP-ROOT",
+        "depth": 2,
+        "status": "active"
+      }
+    ]
+  },
+  "runtimeRefinementPolicy": {
+    "trigger": "observed-problem-or-failed-exit-condition",
+    "maxDepth": 1,
+    "maxOpenBranches": 1,
+    "persistent": false,
+    "mayExpandProductScope": false,
+    "mustReturnToParent": true
+  },
+  "runtimeRefinements": [
+    {
+      "id": "RF-001",
+      "kind": "temporary-problem-refinement",
+      "parentStep": "BP-01/P5",
+      "problem": "Playwright 库存在但默认 Chromium 可执行文件未安装，首次静态预览无法启动。",
+      "triggerEvidence": "npm run check:visual 返回 Executable doesn't exist，且安装浏览器超出已授权范围。",
+      "persistent": false,
+      "expandsProductScope": false,
+      "status": "resolved",
+      "resultEvidence": "visual-check 支持 RIKI_BROWSER_EXECUTABLE，并使用机器现有 Chrome 完成桌面与移动端检查。",
+      "returnTo": "BP-01/P5"
+    }
+  ],
+  "discussionDirections": [
+    {
+      "id": "DIR-HOST",
+      "topic": "承载面、版本加载与状态权威",
+      "level": "foundational",
+      "roundLimit": 4,
+      "roundsUsed": 2,
+      "status": "frozen",
+      "decisionIds": ["D-001", "D-002", "D-003"]
+    }
+  ],
+  "frontendDecision": {
+    "recommended": "hybrid",
+    "fit": "suitable",
+    "reason": "Tavern Helper 组件负责酒馆内运行，响应式宿主工作台负责电脑与手机，版本化远程模块负责更新。",
+    "fallback": "无法远程加载时使用本地开发加载器；无法挂载宿主时保留运行时 API 与错误诊断。",
+    "reopenWhen": "真实宿主证明动态 import 或父页面挂载不兼容时",
+    "driverOverride": false,
+    "prototypeGateRequired": false,
+    "realHostGateRequired": true
+  },
+  "acceptance": {
+    "automated": "passed",
+    "staticPreview": "passed",
+    "realHost": "pending",
+    "driver": {
+      "status": "pending",
+      "source": "driver"
+    }
+  }
+}

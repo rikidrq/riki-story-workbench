@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-08-21T09:32:38.776Z",
+  "results": [
+    {
+      "viewport": "desktop-1440x900",
+      "title": "Riki 剧情工作台",
+      "shell": {
+        "width": 1411,
+        "height": 864
+      },
+      "workspaceDisplay": "grid",
+      "bookButtons": 3,
+      "entryButtons": 1,
+      "mobileNavDisplay": "none",
+      "horizontalOverflow": false,
+      "errors": [],
+      "diffPreviewOpened": true,
+      "discussionMessages": 2
+    },
+    {
+      "viewport": "mobile-320x700",
+      "title": "Riki 剧情工作台",
+      "shell": {
+        "width": 320,
+        "height": 700
+      },
+      "workspaceDisplay": "block",
+      "bookButtons": 3,
+      "entryButtons": 1,
+      "mobileNavDisplay": "grid",
+      "horizontalOverflow": false,
+      "errors": []
+    },
+    {
+      "viewport": "mobile-375x812",
+      "title": "Riki 剧情工作台",
+      "shell": {
+        "width": 375,
+        "height": 812
+      },
+      "workspaceDisplay": "block",
+      "bookButtons": 3,
+      "entryButtons": 1,
+      "mobileNavDisplay": "grid",
+      "horizontalOverflow": false,
+      "errors": [],
+      "editorVisibleAfterNavigation": true
+    },
+    {
+      "viewport": "mobile-430x900",
+      "title": "Riki 剧情工作台",
+      "shell": {
+        "width": 430,
+        "height": 900
+      },
+      "workspaceDisplay": "block",
+      "bookButtons": 3,
+      "entryButtons": 1,
+      "mobileNavDisplay": "grid",
+      "horizontalOverflow": false,
+      "errors": []
+    }
+  ]
+}

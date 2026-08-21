@@ -1,6 +1,6 @@
 {
   "name": "riki-story-workbench",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "private": true,
   "type": "module",
   "description": "Versioned Tavern Helper Riki story-planning workbench without database or secondary-creation engines.",

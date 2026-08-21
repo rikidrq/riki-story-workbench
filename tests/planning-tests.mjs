@@ -9,6 +9,8 @@ import {
   rikiModuleSystemPrompt,
   rikiBuildPlanningMessages,
   rikiParseArtifactEnvelope,
+  rikiStreamingVisibleText,
+  rikiArtifactVisibleText,
   rikiBuildFormatGuardMessages,
 } from '../src/riki-planning.js';
 
@@ -88,6 +90,24 @@ await test('artifact parser separates visible text and validates expected kind',
   const wrong = rikiParseArtifactEnvelope('<riki_artifact>{"kind":"acts","content":{"acts":[]}}</riki_artifact>', 'outline');
   assert.equal(wrong.artifact, null);
   assert.equal(wrong.errors.length, 1);
+});
+
+await test('stream rendering hides machine artifact blocks and canonical preview exposes full outline', () => {
+  const raw = '正在整理方向。\n<riki_artifact>{"kind":"outline","content":{"title":"雾港"}}</riki_artifact>';
+  assert.equal(rikiStreamingVisibleText(raw), '正在整理方向。');
+  const visible = rikiArtifactVisibleText({
+    kind: 'outline', summary: '总纲候选', content: {
+      title: '雾港蓝焰', premise: '旅人调查失踪案', mainConflict: '记录与记忆冲突',
+      fullOutline: '主角从港务记录开始调查，进入旧灯塔后发现蓝焰系统被人为改动。',
+    },
+  }, '已完成总纲候选，请检查。');
+  assert.match(visible, /# 雾港蓝焰/);
+  assert.match(visible, /## 完整总纲/);
+  assert.match(visible, /蓝焰系统被人为改动/);
+  const longWrapper = '这里是生成说明。'.repeat(40);
+  assert.match(rikiArtifactVisibleText({
+    kind: 'outline', content: { title: '雾港蓝焰', fullOutline: '这段完整总纲必须显示，不能被较长的生成说明遮住。' },
+  }, longWrapper), /这段完整总纲必须显示/);
 });
 
 await test('format guard receives source draft and target schema', () => {

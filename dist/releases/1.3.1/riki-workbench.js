@@ -1,3 +1,4 @@
+/* Riki Story Workbench 1.3.1 | generated from src/riki-workbench.js */
 import * as Project from './riki-project-core.js';
 import * as Models from './riki-model-config.js';
 import {
@@ -18,7 +19,7 @@ import {
   rikiUpdateStreamingMessage,
 } from './riki-ui.js';
 
-const RIKI_WORKBENCH_VERSION = '__RIKI_VERSION__';
+const RIKI_WORKBENCH_VERSION = '1.3.1';
 const RIKI_WORKBENCH_ID = 'riki-story-workbench';
 const RIKI_RUNTIME_KEY = '__RIKI_STORY_WORKBENCH_RUNTIME__';
 const RIKI_PUBLIC_API_KEY = 'RikiStoryWorkbench';

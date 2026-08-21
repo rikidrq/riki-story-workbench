@@ -1,4 +1,4 @@
-import { start, rikiCreateMockAdapter } from '/releases/1.3.0/riki-workbench.js?preview=1.3.0-ui2';
+import { start, rikiCreateMockAdapter } from '/releases/1.3.1/riki-workbench.js?preview=1.3.1-workflow1';
 
 const adapter = rikiCreateMockAdapter({
   character: '林间旅人',
@@ -30,6 +30,15 @@ const adapter = rikiCreateMockAdapter({
 - **关系困局**：失踪领航员主动隐瞒了主角最信任的人。
 
 你更想优先体验哪一种冲突？`;
+    if (/当前仍在方向讨论阶段/u.test(joined)) return `## 当前方向还需要你确认
+
+我先不生成正式成果，继续把会改变后续设计的分歧说清楚：
+
+- 你更希望主线由**调查真相**还是**保护雾港**驱动？
+- 失踪领航员更适合作为主动隐瞒者，还是被迫离开的关键证人？
+- 结局更偏向公开真相、维持秩序，还是保留两条由玩家选择的 IF 路线？
+
+你可以继续回答，也可以在方向稳定后点击确认按钮进入详细设计。`;
     if (/人物 Agent|人物策划|<target_kind>characters|"kind"\s*:\s*"characters"/u.test(joined)) return envelope('characters', '人物候选', { phase: 'detailed', characters: [{ characterId: 'CHAR-001', name: '失踪的领航员', tier: '中档', identity: '雾港领航员', appearanceAnchors: ['蓝焰灼痕'], personalityBehaviors: ['在危险前先检查同伴退路'], goals: ['查清旧灯塔记录被篡改的原因'], motivation: '保护港口航线', bottomLine: '不牺牲无辜者', knowledgeBoundary: '知道蓝焰异常但不知道幕后主使', relationships: [], secrets: ['曾在失踪前私下进入旧灯塔'] }] });
     if (/小章 Agent|小章策划|<target_kind>chapters|"kind"\s*:\s*"chapters"/u.test(joined)) return envelope('chapters', '小章候选', { chapters: [{ chapterId: 'CH-001', actId: 'ACT-001', title: '港务记录的空白', timeRange: '抵达当晚', goals: { required: ['确认领航员未值班'], normal: ['询问港务员'], optional: ['检查蓝焰残留'] }, characters: [{ characterId: 'CHAR-001', purpose: '通过缺席留下矛盾线索' }], events: ['值班记录与目击证词冲突'], knowledgeBoundary: '玩家只知道记录异常', endState: '线索指向旧灯塔', nextHook: '蓝焰在无人处重新亮起' }] });
     if (/大章 Agent|大章策划|<target_kind>acts|"kind"\s*:\s*"acts"/u.test(joined)) return envelope('acts', '大章候选', { acts: [{ actId: 'ACT-001', title: '雾港失踪案', goal: '找到失踪领航员', conflict: '港务记录与私人证词互相矛盾', routes: ['追查港务记录', '调查旧灯塔'], requiredEvents: ['确认领航员当晚未值班'], outcome: '发现蓝焰导航系统被人为改动', nextHook: '线索指向港外禁航区' }] });

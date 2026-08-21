@@ -103,7 +103,22 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="binding-save"]').click();
   result.bindingReset = await root.locator('.resolution-box').innerText();
   await root.locator('[data-action="api-select"]').selectOption({ label: '视觉测试 API' });
+  await root.locator('.right-panel-content').evaluate(node => { node.scrollTop = Math.min(760, node.scrollHeight - node.clientHeight); });
+  const configScrollBefore = await root.locator('.right-panel-content').evaluate(node => node.scrollTop);
+  await root.locator('[data-action="binding-save"]').click();
+  const configScrollAfter = await root.locator('.right-panel-content').evaluate(node => node.scrollTop);
+  result.journey.configScrollPreserved = configScrollBefore > 100 && Math.abs(configScrollAfter - configScrollBefore) < 4;
   await page.screenshot({ path: path.join(rootPath(), 'dist', 'preview-config.png'), fullPage: true });
+
+  await root.locator('[data-action="conversation-new"]').click();
+  await root.locator('[data-action="workflow-mode"][data-mode="lazy"]').click();
+  result.journey.lazyBlockedBeforeDiscussion = await root.locator('[data-action="lazy-start"]').count() === 0;
+  await root.locator('[data-field="composer"]').fill('先讨论故事偏好、总纲走向和大章方向，不要直接生成。');
+  await root.locator('[data-action="planning-send"]').click();
+  await root.locator('[data-action="lazy-start"]').waitFor({ state: 'visible' });
+  result.journey.lazyConfirmationButton = await root.locator('[data-action="lazy-start"]').isVisible();
+  await root.locator('[data-action="conversation-new"]').click();
+  await root.locator('[data-action="workflow-mode"][data-mode="detailed"]').click();
 
   await root.locator('[data-action="right-tab"][data-tab="context"]').click();
   await view(page, 'worldbook');
@@ -120,13 +135,22 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="worldbook-preview"]').click();
   result.journey.worldbookDiff = await root.locator('.modal[aria-label="世界书 Diff"]').isVisible();
   await root.locator('[data-action="worldbook-apply"]').click();
+  await page.waitForFunction(() => document.querySelector('#riki-story-workbench-root')?.shadowRoot?.querySelector('[data-field="wb-content"]')?.value?.includes('视觉测试修改'));
   result.journey.worldbookApplied = (await root.locator('[data-field="wb-content"]').inputValue()).includes('视觉测试修改');
   await root.locator('[data-action="worldbook-undo"]').click();
+  await page.waitForFunction(() => !document.querySelector('#riki-story-workbench-root')?.shadowRoot?.querySelector('[data-field="wb-content"]')?.value?.includes('视觉测试修改'));
   result.journey.worldbookUndo = !(await root.locator('[data-field="wb-content"]').inputValue()).includes('视觉测试修改');
 
   await view(page, 'chat');
   await root.locator('[data-action="right-tab"][data-tab="agent"]').click();
   await root.locator('[data-action="module-select"][data-module="outline"]').click();
+  await root.locator('[data-field="composer"]').fill('先讨论总纲方向：主线应该由调查真相还是保护雾港驱动？');
+  await root.locator('[data-action="planning-send"]').click();
+  await root.locator('[data-action="generate-formal"]').waitFor({ state: 'visible' });
+  result.journey.discussionConfirmationGate = await root.locator('[data-action="generate-formal"]').isVisible();
+  result.journey.replyDiagnosticsVisible = await root.locator('.message-assistant').last().locator('[data-action="message-log-view"][data-log-mode="input"]').isVisible();
+  await root.locator('.message-assistant').last().locator('[data-action="message-log-view"][data-log-mode="input"]').click();
+  result.journey.replyInputVisible = (await root.locator('.message-assistant').last().locator('.message-log-output').innerText()).includes('messages');
   await root.locator('[data-action="generate-formal"]').click();
   await page.waitForFunction(() => {
     const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
@@ -136,6 +160,7 @@ async function desktopJourney(page, result) {
     throw new Error(`formal content pass failed: ${await root.locator('.message-assistant').last().innerText()}`);
   }
   result.journey.contentConfirmationGate = true;
+  result.journey.fullOutlineVisible = (await root.locator('.message-assistant').last().innerText()).includes('完整总纲');
   await root.locator('[data-action="content-confirm-compile"]').click();
   await page.waitForFunction(() => {
     const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
@@ -295,17 +320,19 @@ function audit(report) {
   const browser = await chromium.launch({ headless: true, ...(process.env.RIKI_BROWSER_EXECUTABLE ? { executablePath: process.env.RIKI_BROWSER_EXECUTABLE } : {}) });
   try {
     const results = [];
-    const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, permissions: ['clipboard-read', 'clipboard-write'] });
+    const desktop = await desktopContext.newPage();
     const desktopResult = await openPreview(desktop, 'desktop-1440x900');
     await desktopJourney(desktop, desktopResult);
     results.push(desktopResult);
-    await desktop.close();
+    await desktopContext.close();
     for (const viewport of [{ width: 320, height: 700 }, { width: 375, height: 812 }, { width: 430, height: 900 }]) {
-      const page = await browser.newPage({ viewport, isMobile: true, hasTouch: true });
+      const mobileContext = await browser.newContext({ viewport, isMobile: true, hasTouch: true, permissions: ['clipboard-read', 'clipboard-write'] });
+      const page = await mobileContext.newPage();
       const result = await openPreview(page, `mobile-${viewport.width}x${viewport.height}`);
       await mobileJourney(page, result, viewport.width === 375);
       results.push(result);
-      await page.close();
+      await mobileContext.close();
     }
     const report = { schemaVersion: 2, checkedAt: new Date().toISOString(), results };
     fs.writeFileSync(path.join(root, 'dist', 'visual-check.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');

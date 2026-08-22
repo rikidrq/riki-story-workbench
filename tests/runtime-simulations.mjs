@@ -26,9 +26,9 @@ function mockResponse(config) {
   return '这是一次剧情讨论回复。';
 }
 
-function runtime(chatId) {
+function runtime(chatId, hostOverrides = {}) {
   const adapter = rikiCreateMockAdapter({ character: '模拟角色', chatId, books: { 雾港: [] }, generateResponse: mockResponse });
-  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter });
+  const app = rikiCreateRuntime({ hostWindow: { localStorage: storage(), ...hostOverrides }, adapter });
   app.state.modelLibrary.apiPresets[0] = { ...app.state.modelLibrary.apiPresets[0], transport: 'tavern', profileId: '' };
   return app;
 }
@@ -79,6 +79,22 @@ await test('typed generation wording cannot bypass the discussion confirmation g
   assert.equal(branch.pendingProposal, null);
   assert.equal(branch.strategyProgress.outline.status, 'asked');
   assert.equal(Project.rikiProjectStrategyNextAction(branch, 'outline'), 'generate');
+});
+
+await test('lazy mode auto-sends the first outline discussion and starts the pipeline without another prompt', async () => {
+  let prompts = 0;
+  const app = runtime('lazy-auto-kickoff', { prompt: () => { prompts += 1; return null; } });
+  const branch = Project.rikiProjectActiveConversation(app.state.project);
+  await app.uiAction('workflow-mode', { dataset: { mode: 'lazy' } });
+  assert.equal(branch.strategyMode, 'lazy');
+  assert.equal(branch.module, 'outline');
+  assert.equal(branch.messages[0].role, 'user');
+  assert.equal(branch.messages[0].request.task, 'workflow_kickoff');
+  assert.equal(branch.messages[1].module, 'outline');
+  assert.equal(branch.strategyProgress.outline.status, 'asked');
+  await app.uiAction('lazy-start', { dataset: {} });
+  assert.equal(prompts, 0);
+  assert.equal(app.state.project.runtime.lazyBatch.status, 'awaiting_confirmation');
 });
 
 await test('simulation round 2: brief workflow confirms rough characters before detailed version', async () => {
@@ -178,6 +194,25 @@ await test('character-bound worldbooks and recent Tavern messages enter the sele
   assert.match(sent, /我刚刚抵达港口/);
   assert.doesNotMatch(sent, /最早正文不应越过预算/);
   assert.ok(contextMessage.content.length < 49_000, `上下文字符预算失效：${contextMessage.content.length}`);
+});
+
+await test('legacy empty worldbook selection is repopulated from the current character binding', async () => {
+  const projectState = Project.rikiProjectCreateState({ chatKey: '旧选择角色::legacy-empty-context', scriptVersion: '1.3.1' });
+  const savedBranch = Project.rikiProjectActiveConversation(projectState);
+  savedBranch.context.initialized = true;
+  savedBranch.context.selectedWorldbooks = [];
+  savedBranch.context.selectedEntries = {};
+  delete savedBranch.context.selectionCustomized;
+  const adapter = rikiCreateMockAdapter({
+    character: '旧选择角色', chatId: 'legacy-empty-context', projectState,
+    bindings: { character: ['角色设定'] },
+    books: { 角色设定: [{ uid: 9, name: '默认条目', enabled: true, content: '默认应选中。' }] },
+  });
+  const app = useMockTavern(rikiCreateRuntime({ hostWindow: { localStorage: storage() }, adapter }));
+  await app.refreshInventory();
+  const branch = Project.rikiProjectActiveConversation(app.state.project);
+  assert.deepEqual(branch.context.selectedWorldbooks, ['角色设定']);
+  assert.deepEqual(branch.context.selectedEntries['角色设定'], ['9']);
 });
 
 await test('ready project uses the main controller model only for ambiguous routing', async () => {

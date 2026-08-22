@@ -45,5 +45,8 @@ assert.match(ui, /min-height:44px/u);
 assert.match(ui, /captureScrollPositions\(runtime, state\)/u);
 assert.match(ui, /restoreScrollPositions\(runtime, state\)/u);
 assert.match(ui, /messageLogMode/u);
+assert.match(ui, /focus\?\.\(\{ preventScroll: true \}\)/u);
+assert.match(ui, /message-followup/u);
+assert.match(ui, /streamingUiUpdate/u);
 
 console.log(`Action contract passed: ${rendered.length} rendered actions, 0 missing handlers.`);

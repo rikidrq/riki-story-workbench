@@ -46,6 +46,9 @@ assert.equal((loader.content.match(/const RIKI_VERSION\s*=/g) || []).length, 1);
 assert.ok(loader.content.includes(`const RIKI_VERSION = '${currentVersion}'`));
 assert.match(loader.content, /@v\$\{RIKI_VERSION\}\/dist\/releases\/\$\{RIKI_VERSION\}/u);
 assert.equal(loader.content.includes('@main'), false);
+assert.equal(loader.button.enabled, false, 'Tavern Helper chat-bottom button must stay disabled; use the floating launcher');
+assert.deepEqual(loader.button.buttons, []);
+assert.equal(loader.export_with.button, false);
 
 const oldReleaseWorking = fs.readFileSync(path.join(root, 'dist/releases/1.0.0/riki-workbench.js'));
 assert.equal(sha256(oldReleaseWorking), '860ce0866f77e243e199552431b7874a04ed4a20d1fbbeeb158a143917efb9fe', 'published 1.0.0 release bytes changed');

@@ -1,41 +1,41 @@
 {
   "schemaVersion": 1,
   "project": "riki-story-workbench",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "deliveryMode": "component",
   "stableScriptId": "d1e7f665-988c-4c72-8ff1-ccbc51aba5d3",
   "artifacts": [
     {
-      "path": "dist/releases/1.3.1/riki-workbench.js",
-      "sha256": "834f54760968232e47a354e8b0450f051a7353fd5fb74bc745f9be31913a0f12"
+      "path": "dist/releases/1.3.2/riki-workbench.js",
+      "sha256": "74332ae3c95383502c01a0f82c00aae824237368153102affae0071b6c0683ab"
     },
     {
-      "path": "dist/releases/1.3.1/riki-project-core.js",
-      "sha256": "4a092aa4d2da85276d0d4e88aecfbf60da7bed90338a6c9259cecf59de0ca973"
+      "path": "dist/releases/1.3.2/riki-project-core.js",
+      "sha256": "a80974fcbf23e6da0599fede9bf951f12e566be1a31a93978f22f51c4c8c783a"
     },
     {
-      "path": "dist/releases/1.3.1/riki-model-config.js",
-      "sha256": "cd207dfbd2cd7231413729f9ffa1ab760adc5a239a2137c3fef51ca69af5e574"
+      "path": "dist/releases/1.3.2/riki-model-config.js",
+      "sha256": "f8f737e3d1bde1d53731cee42a9e4c87157f9c020afa011ebeef5aff0e14b51f"
     },
     {
-      "path": "dist/releases/1.3.1/riki-planning.js",
-      "sha256": "9b6a085113efd462f25ed032787249b9d45058377c47eb2879294bb4e667bf55"
+      "path": "dist/releases/1.3.2/riki-planning.js",
+      "sha256": "05b27f40e24b8b81f21f32d6daccb1b5d2b55a86ce0cbdcad3b5d5c4becefd74"
     },
     {
-      "path": "dist/releases/1.3.1/riki-ui.js",
-      "sha256": "2c5910b4768cfdeafd5b9cfa8471f6db87fd34947bfd843d0d3b14ec9f82d3c6"
+      "path": "dist/releases/1.3.2/riki-ui.js",
+      "sha256": "f7fef1f99609eec847899b96c710f79a90d1749d227f8df62600abf22e71d884"
     },
     {
       "path": "dist/酒馆助手脚本-Riki剧情工作台-版本加载器.json",
-      "sha256": "7f49dc9683977d97a78e5d4222623b1d68ebc6d0dcd5509a7e6a28e98a84a021"
+      "sha256": "18154351fd15162c18db8212eb013d3188ea0d19f2947cf88c7c8f2cd458326e"
     },
     {
       "path": "dist/酒馆助手脚本-Riki剧情工作台-本地开发加载器.json",
-      "sha256": "6fab447637b89e7a03db9b1eac4f1187718816fc849badac3b33f9f10c624ba2"
+      "sha256": "7222176d9c0a72902c470fc2575e2acda3b679b7a1cc1038f131bc712347a032"
     },
     {
       "path": "dist/importable/riki-version-loader.script.json",
-      "sha256": "7f49dc9683977d97a78e5d4222623b1d68ebc6d0dcd5509a7e6a28e98a84a021"
+      "sha256": "18154351fd15162c18db8212eb013d3188ea0d19f2947cf88c7c8f2cd458326e"
     }
   ],
   "boundaries": {

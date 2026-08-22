@@ -22,7 +22,6 @@ const importableDirectory = path.join(dist, 'importable');
 const importableLoaderPath = path.join(importableDirectory, 'riki-version-loader.script.json');
 const componentManifestPath = path.join(importableDirectory, 'component-update-manifest.json');
 const stableScriptId = 'd1e7f665-988c-4c72-8ff1-ccbc51aba5d3';
-const buttonName = '打开 Riki 剧情工作台';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -44,9 +43,9 @@ function helperScript(content, info) {
     id: stableScriptId,
     content,
     info,
-    button: { enabled: true, buttons: [{ name: buttonName, visible: true }] },
+    button: { enabled: false, buttons: [] },
     data: {},
-    export_with: { data: true, button: true },
+    export_with: { data: true, button: false },
   };
 }
 

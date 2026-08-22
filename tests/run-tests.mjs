@@ -244,8 +244,9 @@ await test('build artifacts use one editable version constant and component shap
   for (const artifact of [remote, local]) {
     assert.equal(artifact.type, 'script');
     assert.equal(artifact.id, 'd1e7f665-988c-4c72-8ff1-ccbc51aba5d3');
-    assert.equal(artifact.button.enabled, true);
-    assert.equal(artifact.button.buttons[0].name, '打开 Riki 剧情工作台');
+    assert.equal(artifact.button.enabled, false);
+    assert.deepEqual(artifact.button.buttons, []);
+    assert.equal(artifact.export_with.button, false);
     assert.equal((artifact.content.match(/const RIKI_VERSION\s*=/g) || []).length, 1);
     assert.equal(artifact.content.includes('RIKI_RELEASE_BASE'), true);
   }

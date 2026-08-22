@@ -1,8 +1,10 @@
-import { start, rikiCreateMockAdapter } from '/releases/1.3.1/riki-workbench.js?preview=1.3.1-workflow1';
+import { start, rikiCreateMockAdapter } from '/releases/1.3.2/riki-workbench.js?preview=1.3.2-ui-flow';
 
 const adapter = rikiCreateMockAdapter({
   character: '林间旅人',
   chatId: 'preview-story',
+  streamResponseParts: 12,
+  streamChunkDelayMs: 6,
   bindings: { character: ['雾港设定集'], chat: '当前剧情书', global: ['写作规则'] },
   books: {
     '当前剧情书': [

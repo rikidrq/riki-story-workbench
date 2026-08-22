@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "checkedAt": "2026-08-21T20:34:16.077Z",
+  "checkedAt": "2026-08-22T01:52:27.125Z",
   "results": [
     {
       "viewport": "desktop-1440x900",
@@ -20,6 +20,7 @@
       "errors": [],
       "journey": {
         "strategySelected": true,
+        "initialOutlineKickoff": true,
         "branchCreated": true,
         "branchCopied": true,
         "branchRenamed": true,
@@ -37,14 +38,21 @@
         "systemSaved": true,
         "bindingSaved": true,
         "configScrollPreserved": true,
-        "lazyBlockedBeforeDiscussion": true,
+        "focusedConfigScrollPreserved": true,
+        "lazyAutoSent": true,
+        "lazyOutlineFirst": true,
         "lazyConfirmationButton": true,
+        "confirmationBelowReply": true,
+        "noComposerConfirmation": true,
+        "characterWorldbookDefaultSelected": true,
         "worldbookModelSuggestion": true,
         "worldbookSuggestionLoaded": true,
         "worldbookDiff": true,
         "worldbookApplied": true,
         "worldbookUndo": true,
+        "streamUpdatesCoalesced": true,
         "discussionConfirmationGate": true,
+        "stageConfirmationInReply": true,
         "replyDiagnosticsVisible": true,
         "replyInputVisible": true,
         "contentConfirmationGate": true,
@@ -68,22 +76,26 @@
         "logExport": true,
         "secretExcludedFromProject": true
       },
-      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"api-2-88971d23-32b2-4734-9c19-a225af6ddda4\",\n  \"apiPresetName\": \"视觉测试 API\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"https://mock.invalid/v1\",\n  \"profile\": {\n    \"id\": \"mock-profile\",\n    \"name\": \"模拟酒馆连接预设\",\n    \"api\": \"openai\",\n    \"mode\": \"\",\n    \"model\": \"mock-model\",\n    \"models\": [\n      \"mock-model\"\n    ],\n    \"tavernPreset\": \"模拟写作预设\",\n    \"endpoint\": \"https://mock.invalid/v1\",\n    \"credential\": \"酒馆密钥库引用（已隐藏）\"\n  },\n  \"credential\": \"酒馆密钥库引用（已隐藏）\",\n  \"systemPresetId\": \"system-7-50047fcb-3081-4f29-a325-b1fc143e39d6\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
-      "rerolledText": "R\n大章 Agent\n大章 Agent\n20:34\n当前方向还需要你确认\n\n我先不生成正式成果，继续把会改变后续设计的分歧说清楚：\n\n你更希望主线由调查真相还是保护雾港驱动？\n失踪领航员更适合作为主动隐瞒者，还是被迫离开的关键证人？\n结局更偏向公开真相、维持秩序，还是保留两条由玩家选择的 IF 路线？\n\n你可以继续回答，也可以在方向稳定后点击确认按钮进入详细设计。\n\n请求详情 · complete\n内容生成 ·\n完成\n输入\n输出诊断\nAI 原文\n合并收发\n{\n  \"status\": \"complete\",\n  \"module\": \"act\",\n  \"pass\": \"primary\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"startedAt\": \"2026-08-21T20:34:07.816Z\",\n  \"endedAt\": \"2026-08-21T20:34:07.832Z\",\n  \"streamed\": true,\n  \"fallback\": false,\n  \"notice\": \"\",\n  \"inputTokens\": null,\n  \"visibleOutput\": \"## 当前方向还需要你确认\\n\\n我先不生成正式成果，继续把会改变后续设计的分歧说清楚：\\n\\n- 你更希望主线由**调查真相**还是**保护雾港**驱动？\\n- 失踪领航员更适合作为主动隐瞒者，还是被迫离开的关键证人？\\n- 结局更偏向公开真相、维持秩序，还是保留两条由玩家选择的 IF 路线？\\n\\n你可以继续回答，也可以在方向稳定后点击确认按钮进入详细设计。\",\n  \"error\": null\n}\n重 Roll\n删除\n复制",
+      "bindingReset": "实际请求解析\n{\n  \"apiPresetId\": \"api-2-6bf49661-e151-4d55-92b9-3608b20b8ca9\",\n  \"apiPresetName\": \"视觉测试 API\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"modelSource\": \"api_preset\",\n  \"endpoint\": \"https://mock.invalid/v1\",\n  \"profile\": {\n    \"id\": \"mock-profile\",\n    \"name\": \"模拟酒馆连接预设\",\n    \"api\": \"openai\",\n    \"mode\": \"\",\n    \"model\": \"mock-model\",\n    \"models\": [\n      \"mock-model\"\n    ],\n    \"tavernPreset\": \"模拟写作预设\",\n    \"endpoint\": \"https://mock.invalid/v1\",\n    \"credential\": \"酒馆密钥库引用（已隐藏）\"\n  },\n  \"credential\": \"酒馆密钥库引用（已隐藏）\",\n  \"systemPresetId\": \"system-7-ec4bc483-1acc-4bad-b9bc-a6fc6cb0a7e9\",\n  \"systemPresetName\": \"视觉测试 System\"\n}",
+      "streamMutationCount": 2,
+      "rerolledText": "R\n大章 Agent\n大章 Agent\n01:52\n当前方向还需要你确认\n\n我先不生成正式成果，继续把会改变后续设计的分歧说清楚：\n\n你更希望主线由调查真相还是保护雾港驱动？\n失踪领航员更适合作为主动隐瞒者，还是被迫离开的关键证人？\n结局更偏向公开真相、维持秩序，还是保留两条由玩家选择的 IF 路线？\n\n你可以继续回答，也可以在方向稳定后点击确认按钮进入详细设计。\n\n这一轮讨论完成后，由你决定是否进入正式生成\n按钮跟随当前回复；你也可以继续讨论，旧回复上的入口会自动让位给最新一轮。\n继续讨论\n确认大章走向并生成大章详细草稿\n请求详情 · complete\n内容生成 ·\n完成\n输入\n输出诊断\nAI 原文\n合并收发\n{\n  \"status\": \"complete\",\n  \"module\": \"act\",\n  \"pass\": \"primary\",\n  \"transport\": \"profile\",\n  \"model\": \"mock-model\",\n  \"startedAt\": \"2026-08-22T01:52:20.550Z\",\n  \"endedAt\": \"2026-08-22T01:52:20.735Z\",\n  \"streamed\": true,\n  \"fallback\": false,\n  \"notice\": \"\",\n  \"inputTokens\": null,\n  \"visibleOutput\": \"## 当前方向还需要你确认\\n\\n我先不生成正式成果，继续把会改变后续设计的分歧说清楚：\\n\\n- 你更希望主线由**调查真相**还是**保护雾港**驱动？\\n- 失踪领航员更适合作为主动隐瞒者，还是被迫离开的关键证人？\\n- 结局更偏向公开真相、维持秩序，还是保留两条由玩家选择的 IF 路线？\\n\\n你可以继续回答，也可以在方向稳定后点击确认按钮进入详细设计。\",\n  \"error\": null\n}\n重 Roll\n删除\n复制",
       "rerollCounts": {
-        "before": 5,
-        "after": 5
+        "before": 6,
+        "after": 6
       },
       "logRows": [
-        "大章 Agent\n完成\n2026-08-21 20:34:10 · profile · mock-model",
-        "大章 Agent\n完成\n2026-08-21 20:34:10 · profile · mock-model",
-        "大章 Agent\n完成\n2026-08-21 20:34:07 · profile · mock-model",
-        "大章 Agent\n完成\n2026-08-21 20:34:06 · profile · mock-model",
-        "总纲 Agent\n完成\n2026-08-21 20:34:06 · profile · mock-model",
-        "总纲 Agent\n完成\n2026-08-21 20:34:05 · profile · mock-model",
-        "总纲 Agent\n完成\n2026-08-21 20:34:04 · profile · mock-model",
-        "主控 Agent\n完成\n2026-08-21 20:34:03 · profile · mock-model",
-        "总纲 Agent\n完成\n2026-08-21 20:34:03 · profile · mock-model"
+        "大章 Agent\n完成\n2026-08-22 01:52:21 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-22 01:52:20 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-22 01:52:20 · profile · mock-model",
+        "大章 Agent\n完成\n2026-08-22 01:52:20 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-22 01:52:19 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-22 01:52:19 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-22 01:52:18 · profile · mock-model",
+        "主控 Agent\n完成\n2026-08-22 01:52:17 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-22 01:52:17 · profile · mock-model",
+        "总纲 Agent\n完成\n2026-08-22 01:52:17 · profile · mock-model",
+        "总纲 Agent\n失败\n2026-08-22 01:52:15 · profile ·",
+        "总纲 Agent\n失败\n2026-08-22 01:52:15 · profile ·"
       ]
     },
     {

@@ -1,3 +1,4 @@
+/* Riki Story Workbench 1.3.2 | generated from src/riki-ui.js */
 import { RIKI_PLANNING_MODULES, RIKI_ARTIFACT_KINDS, rikiPlanningStage } from './riki-planning.js';
 import { rikiResolveModuleConfig } from './riki-model-config.js';
 import { rikiProjectStrategyNextAction } from './riki-project-core.js';

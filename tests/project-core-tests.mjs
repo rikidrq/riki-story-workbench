@@ -73,6 +73,18 @@ test('新项目建立聊天隔离、四类成果仓与非敏感模型绑定', ()
   assert.equal(Object.hasOwn(state.config, 'apiKey'), false);
 });
 
+test('旧版空世界书选择会恢复角色默认，旧版非空选择视为用户自定义', () => {
+  const empty = core.rikiProjectCreateContext({ initialized: true, selectedEntries: {} });
+  assert.equal(empty.selectionCustomized, false);
+  const selected = core.rikiProjectCreateContext({
+    initialized: true,
+    selectedWorldbooks: ['角色设定'],
+    selectedEntries: { 角色设定: ['7'] },
+  });
+  assert.equal(selected.selectionCustomized, true);
+  assert.deepEqual(selected.selectedEntries, { 角色设定: ['7'] });
+});
+
 test('状态归一化只保留非敏感模型 ID 并剔除旧数据库形状', () => {
   const raw = makeState();
   raw.artifacts.database = { currentVersionId: 'db-v1', versions: [{ versionId: 'db-v1', content: { tables: [] }, status: 'confirmed' }] };

@@ -1,4 +1,4 @@
-# Riki剧情助手 1.3.1
+# Riki剧情助手 1.3.2
 
 Riki剧情助手是可导入 Tavern Helper 的完整剧情策划工具。1.3 以浏览器逐项点击本地原版 `Riki剧情助手 2.2.0` 的结果为功能分母，保留分支 Agent、酒馆连接预设与模型保存、主控/总纲/大章/小章/人物/格式编译、正式成果版本、回收站、流式生成、日志、项目导入导出和世界书受控修改；明确移除 SP·数据库、推进预设、灵感二创、生图、MVU 和记忆引擎。
 
@@ -7,13 +7,13 @@ Riki剧情助手是可导入 Tavern Helper 的完整剧情策划工具。1.3 以
 电脑和手机的酒馆里都只保留同一个微型加载器。以后升级只改其中这一行：
 
 ```js
-const RIKI_VERSION = '1.3.1';
+const RIKI_VERSION = '1.3.2';
 ```
 
 加载器固定从以下不可移动版本标签读取：
 
 ```text
-https://gcore.jsdelivr.net/gh/rikidrq/riki-story-workbench@v1.3.1/dist/releases/1.3.1/riki-workbench.js
+https://gcore.jsdelivr.net/gh/rikidrq/riki-story-workbench@v1.3.2/dist/releases/1.3.2/riki-workbench.js
 ```
 
 每次发布都会保留旧版本目录和旧 Git 标签。新版异常时，把版本号改回 `1.0.0` 即可回退；不要移动或覆盖已发布标签。
@@ -24,7 +24,7 @@ https://gcore.jsdelivr.net/gh/rikidrq/riki-story-workbench@v1.3.1/dist/releases/
 2. 打开 SillyTavern，进入 Tavern Helper / 酒馆助手的脚本管理。
 3. 导入该 JSON，并确认脚本已启用。
 4. 刷新酒馆页面。
-5. 点击脚本按钮「打开 Riki 剧情工作台」，或点击页面右下角 `R`。
+5. 点击页面右下角的 `Riki` 悬浮入口；聊天底部不再创建重复脚本按钮。
 6. 第一次打开后进入右侧「配置」标签：新建 API → 选择「引用酒馆连接预设（地址 + Key）」→ 选择酒馆预设 → 获取/手填模型 → 保存 API。
 
 本地开发测试时运行：
@@ -42,9 +42,9 @@ npm run preview
 
 1. 把正式加载器 JSON 下载到手机“下载”目录，或从电脑传到手机。
 2. 在手机酒馆的 Tavern Helper 脚本管理中选择“导入”，从文件选择器选中 JSON。
-3. 启用脚本并刷新页面；右下角会出现 `R`。
+3. 启用脚本并刷新页面；右下角会出现 `Riki` 悬浮入口。
 4. 手机沿用原版交互：左上角汉堡按钮打开 Agent 对话抽屉，右上角齿轮打开七标签工作台；再次点击同一按钮回到聊天。
-5. 点击右上角 `×` 会真正隐藏全屏遮罩；再次点击 `R` 可重开，生成中的任务不会因视觉关闭而被销毁。
+5. 点击右上角 `×` 会真正隐藏全屏遮罩；再次点击 `Riki` 可重开，生成中的任务不会因视觉关闭而被销毁。
 
 手机第一次配置独立 API 时要特别注意：HTTPS 酒馆不能直接请求 HTTP API；服务端还必须允许浏览器跨域。出现 `Failed to fetch` 时，Riki 会明确提示跨域、HTTPS 混合内容或网络不可达，不会私自切换连接方式。
 

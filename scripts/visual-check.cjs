@@ -49,13 +49,24 @@ async function view(page, id) {
   await root.locator(`.${id === 'chat' ? 'chat' : id}-view`).waitFor({ state: 'visible' });
 }
 
+async function waitForLatestAssistant(page) {
+  await page.waitForFunction(() => {
+    const shadow = document.querySelector('#riki-story-workbench-root')?.shadowRoot;
+    const messages = [...(shadow?.querySelectorAll('.message-assistant') || [])];
+    return messages.length > 0 && !messages.at(-1).classList.contains('is-streaming');
+  });
+}
+
 async function desktopJourney(page, result) {
   const root = app(page);
   await root.locator('[data-action="workflow-mode"][data-mode="detailed"]').click();
+  await waitForLatestAssistant(page);
   result.journey.strategySelected = await root.locator('[data-field="composer"]').isEnabled();
+  result.journey.initialOutlineKickoff = (await root.locator('.message-assistant').last().innerText()).includes('总纲 Agent');
   await root.locator('[data-action="conversation-new"]').click();
   result.journey.branchCreated = await root.locator('[data-action="conversation-select"]').count() >= 2;
   await root.locator('[data-action="workflow-mode"][data-mode="detailed"]').click();
+  await waitForLatestAssistant(page);
   await root.locator('[data-action="right-tab"][data-tab="preferences"]').click();
   await root.locator('[data-action="conversation-copy"]').click();
   result.journey.branchCopied = await root.locator('[data-action="conversation-select"]').count() >= 3;
@@ -108,19 +119,31 @@ async function desktopJourney(page, result) {
   await root.locator('[data-action="binding-save"]').click();
   const configScrollAfter = await root.locator('.right-panel-content').evaluate(node => node.scrollTop);
   result.journey.configScrollPreserved = configScrollBefore > 100 && Math.abs(configScrollAfter - configScrollBefore) < 4;
+  const transport = root.locator('[data-model-field="transport"]');
+  await root.locator('.right-panel-content').evaluate(node => { node.scrollTop = Math.min(520, node.scrollHeight - node.clientHeight); });
+  await transport.evaluate(node => node.focus({ preventScroll: true }));
+  const focusScrollBefore = await root.locator('.right-panel-content').evaluate(node => node.scrollTop);
+  await transport.selectOption('direct');
+  const focusScrollAfter = await root.locator('.right-panel-content').evaluate(node => node.scrollTop);
+  result.journey.focusedConfigScrollPreserved = focusScrollBefore > 100 && Math.abs(focusScrollAfter - focusScrollBefore) < 4;
   await page.screenshot({ path: path.join(rootPath(), 'dist', 'preview-config.png'), fullPage: true });
 
   await root.locator('[data-action="conversation-new"]').click();
   await root.locator('[data-action="workflow-mode"][data-mode="lazy"]').click();
-  result.journey.lazyBlockedBeforeDiscussion = await root.locator('[data-action="lazy-start"]').count() === 0;
-  await root.locator('[data-field="composer"]').fill('先讨论故事偏好、总纲走向和大章方向，不要直接生成。');
-  await root.locator('[data-action="planning-send"]').click();
-  await root.locator('[data-action="lazy-start"]').waitFor({ state: 'visible' });
-  result.journey.lazyConfirmationButton = await root.locator('[data-action="lazy-start"]').isVisible();
+  await waitForLatestAssistant(page);
+  result.journey.lazyAutoSent = await root.locator('.message-user').last().innerText().then(value => value.includes('总纲 Agent'));
+  result.journey.lazyOutlineFirst = (await root.locator('.message-assistant').last().innerText()).includes('总纲 Agent');
+  result.journey.lazyConfirmationButton = await root.locator('.message-assistant').last().locator('[data-action="lazy-start"]').isVisible();
+  result.journey.confirmationBelowReply = await root.locator('.message-assistant').last().locator('.message-followup').isVisible();
+  result.journey.noComposerConfirmation = await root.locator('.composer [data-action="lazy-start"],.composer [data-action="generate-formal"]').count() === 0;
   await root.locator('[data-action="conversation-new"]').click();
   await root.locator('[data-action="workflow-mode"][data-mode="detailed"]').click();
+  await waitForLatestAssistant(page);
 
   await root.locator('[data-action="right-tab"][data-tab="context"]').click();
+  const characterDefaults = root.locator('[data-action="context-checkbox"][data-book="雾港设定集"]');
+  result.journey.characterWorldbookDefaultSelected = await characterDefaults.count() > 0
+    && await characterDefaults.evaluateAll(nodes => nodes.every(node => node.checked));
   await view(page, 'worldbook');
   await root.locator('[data-action="book-select"]').first().click();
   await root.locator('[data-action="entry-select"]').first().click();
@@ -144,10 +167,25 @@ async function desktopJourney(page, result) {
   await view(page, 'chat');
   await root.locator('[data-action="right-tab"][data-tab="agent"]').click();
   await root.locator('[data-action="module-select"][data-module="outline"]').click();
+  await root.evaluate(host => {
+    host.__rikiStreamMutationCount = 0;
+    host.__rikiStreamObserver?.disconnect();
+    host.__rikiStreamObserver = new MutationObserver(mutations => {
+      host.__rikiStreamMutationCount += mutations.filter(mutation => mutation.target?.classList?.contains('message-content')).length;
+    });
+    host.__rikiStreamObserver.observe(host.shadowRoot, { childList: true, subtree: true });
+  });
   await root.locator('[data-field="composer"]').fill('先讨论总纲方向：主线应该由调查真相还是保护雾港驱动？');
   await root.locator('[data-action="planning-send"]').click();
   await root.locator('[data-action="generate-formal"]').waitFor({ state: 'visible' });
+  const streamMutationCount = await root.evaluate(host => {
+    host.__rikiStreamObserver?.disconnect();
+    return host.__rikiStreamMutationCount || 0;
+  });
+  result.streamMutationCount = streamMutationCount;
+  result.journey.streamUpdatesCoalesced = streamMutationCount > 0 && streamMutationCount <= 5;
   result.journey.discussionConfirmationGate = await root.locator('[data-action="generate-formal"]').isVisible();
+  result.journey.stageConfirmationInReply = await root.locator('.message-assistant').last().locator('.message-followup [data-action="generate-formal"]').isVisible();
   result.journey.replyDiagnosticsVisible = await root.locator('.message-assistant').last().locator('[data-action="message-log-view"][data-log-mode="input"]').isVisible();
   await root.locator('.message-assistant').last().locator('[data-action="message-log-view"][data-log-mode="input"]').click();
   result.journey.replyInputVisible = (await root.locator('.message-assistant').last().locator('.message-log-output').innerText()).includes('messages');
